@@ -4,7 +4,7 @@
     <!-- Set the viewport width to device width for mobile -->
     <meta name="viewport" content="width=device-width" />
 
-    <title>NFL Salary Scraping</title>
+    <title>NFL Salary Web Scraping - Part 1</title>
 
     <link rel="stylesheet" href="./theme/css/normalize.css" />
     <link rel="stylesheet" href="./theme/css/foundation.min.css" />
@@ -45,22 +45,35 @@
 <article>
     <header>
         <h3 class="article-title"><a href="./nfl-salary.html" rel="bookmark"
-        title="Permalink to NFL Salary Scraping">NFL Salary Scraping</a></h3>
+        title="Permalink to NFL Salary Web Scraping - Part 1">NFL Salary Web Scraping - Part 1</a></h3>
     </header>
 
-<h6 class="subheader" title="2017-09-30T10:20:00-04:00">Sat 30 September 2017
+<h6 class="subheader" title="2017-10-10T10:20:00-04:00">Tue 10 October 2017
 </h6>
 
 
-    <h1>NFL Team Salary Scraping</h1>
+    <h1>NFL Team Salary Scraping - Part 1</h1>
 <h3>Background and problem statement</h3>
 <p>I first started thinking about this problem over the 2015-2106 NFL offseason.  During that time one of the biggest stories was the holdout and potential free agency of then Quarterback Ryan Fitzpatrack.  Over the course of the 2015 season Fitzpatrick helped the Jets win 10 games and had career year where he enjoyed personal bests, with nearly 4,000 yards passing and 31 TD passes (a franchise record).  However, the Jets missed the playoffs that year and some argue that Fitzpatrick's play was in a week 17 loss at Buffalo was the contributing factor.  With that in the recordbooks do you really have the ability to demand more tha $8 Million a season?  </p>
-<p>The questions I have been looking to answer are:
-<em> What is the value of an NFL Player in relation to some statistic?  Win/Loss ratio?<br>
-</em> What the aver salaries of the top NFL teams?</p>
+<p>The questions I have been looking to answer are:</p>
+<ul>
+<li>What is the value of an NFL Player in relation to some statistic?  Win/Loss ratio, QBR, TD/Interception Ratio?   </li>
+<li>What are the salaries of the top NFL teams?</li>
+</ul>
+<p>I'm sure there are many more questions that could be asked of a comprehensive NFL salary dataset: </p>
+<ul>
+<li>What are the top earning positions of a particular team and relate that to the teams performance in those categories?</li>
+<li>And maybe stretching the limits to making a correlation between the number of twitter mentions of a particular player and their salary.  </li>
+</ul>
 <p>I have found there to be shockingly little information about NFL teams and their player salaries on the internet.  While Fantasy football has made player and game statistical information abundantly available the connection of the salary data and the statistics is lacking.  </p>
-<h2>Write and Read from a file</h2>
-<p>Instead of continuing to get from the web page I put everything into a file and then worked from there.  </p>
+<h2>Getting Started</h2>
+<p>spotrac has good salary, bonus, and contract information.  They claim to be:</p>
+<blockquote>
+<p>Spotrac has become the largest online sports team, &amp; player contract resource on the internet. </p>
+</blockquote>
+<p>I used this site to get started with the 2017 salary of the NY Jets.  It is my intention to revist this with Part 2 of this post to scrape data for all 32 teams and make a complete NFL Salary dataset.  </p>
+<h2>Reading Data and Writing to a File</h2>
+<p>I leveraged the BeautifulSoup library to accomplish the webscraping and then wrote the soup object out to a file.  This allowed me to just execute the next cell over and over again instead of needing to continually make calls to the website.  </p>
 <div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">urllib.request</span> <span class="kn">import</span> <span class="n">urlopen</span>
 <span class="kn">from</span> <span class="nn">bs4</span> <span class="kn">import</span> <span class="n">BeautifulSoup</span>
 <span class="n">base_url</span> <span class="o">=</span> <span class="s2">&quot;http://www.spotrac.com/nfl/new-york-jets/cap/&quot;</span>
@@ -74,6 +87,8 @@
 </pre></div>
 
 
+<h2>Reading Data from a File</h2>
+<p>Execute the above cell once and then start here</p>
 <div class="highlight"><pre><span></span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;sample_page.txt&quot;</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="nb">file</span><span class="p">:</span>
     <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">file</span><span class="p">:</span>
         <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
@@ -83,7 +98,8 @@
 <h2>Parse the HTML</h2>
 <p>Import the BeautifulSoup library and use the find method to get the datatable.
 It is important to note here, that I opened the sample_page with read binary flags "rb".  Leaving off the binary was causing the parser to puke 6 ways to Sunday.  </p>
-<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bs4</span> <span class="kn">import</span> <span class="n">BeautifulSoup</span>
+<div class="highlight"><pre><span></span><span class="c1"># Reimport BeautifulSoup so that I can start here</span>
+<span class="kn">from</span> <span class="nn">bs4</span> <span class="kn">import</span> <span class="n">BeautifulSoup</span>
 <span class="n">page</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;sample_page.txt&quot;</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span>
 <span class="n">soup</span> <span class="o">=</span> <span class="n">BeautifulSoup</span><span class="p">(</span><span class="n">page</span><span class="p">,</span> <span class="s2">&quot;html.parser&quot;</span><span class="p">)</span>
 <span class="n">table</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">soup</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;table&quot;</span><span class="p">,</span><span class="s2">&quot;datatable&quot;</span><span class="p">))</span>
@@ -91,7 +107,7 @@ It is important to note here, that I opened the sample_page with read binary fla
 
 
 <h2>Render the table</h2>
-<p>This is an exact replica of the HTML table on the page</p>
+<p>Display the HTML table - this is point of reference to understand source data</p>
 <div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">IPython.core.display</span> <span class="kn">import</span> <span class="n">HTML</span>
 <span class="n">HTML</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
 </pre></div>
@@ -913,6 +929,7 @@ It is important to note here, that I opened the sample_page with read binary fla
 </tbody>
 </table>
 
+<h2>Table Rows</h2>
 <div class="highlight"><pre><span></span><span class="n">rows</span> <span class="o">=</span> <span class="p">[</span><span class="n">row</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">soup</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;table&quot;</span><span class="p">,</span> <span class="s2">&quot;datatable&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="s2">&quot;tr&quot;</span><span class="p">)]</span>
 <span class="n">players</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
@@ -927,6 +944,8 @@ It is important to note here, that I opened the sample_page with read binary fla
 </pre></div>
 
 
+<h2>Column Headers</h2>
+<p>Get the 12 column headers and put them into a list using list compression - this will be used later to rename the column headers in the dataframe</p>
 <div class="highlight"><pre><span></span><span class="n">columns_headers</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span><span class="o">.</span><span class="n">get_text</span><span class="p">()</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">players</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="s2">&quot;th&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">col</span><span class="o">.</span><span class="n">get_text</span><span class="p">()]</span>
 <span class="n">columns_headers</span>
 </pre></div>
@@ -963,7 +982,8 @@ It is important to note here, that I opened the sample_page with read binary fla
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">final_player_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">names</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
 
-<span class="n">final_player_names</span>
+<span class="c1">#slice the list to show only the top 10 names</span>
+<span class="n">final_player_names</span><span class="p">[:</span><span class="mi">10</span><span class="p">]</span>
 </pre></div>
 
 
@@ -976,227 +996,46 @@ It is important to note here, that I opened the sample_page with read binary fla
  [&#39;Matt Forte&#39;],
  [&#39;Kelvin Beachum&#39;],
  [&#39;Morris Claiborne&#39;],
- [&#39;Bilal Powell&#39;],
- [&#39;Benjamin Ijalana&#39;],
- [&#39;Jamal Adams&#39;],
- [&#39;Steve McLendon&#39;],
- [&#39;Wesley Johnson&#39;],
- [&#39;Marcus Williams&#39;],
- [&#39;Darron Lee&#39;],
- [&#39;Demario Davis&#39;],
- [&#39;Jermaine Kearse&#39;],
- [&#39;Josh Martin&#39;],
- [&#39;Marcus Maye&#39;],
- [&#39;Christian Hackenberg&#39;],
- [&#39;Austin Seferian-Jenkins&#39;],
- [&#39;Mike Pennel&#39;],
- [&#39;Chandler Catanzaro&#39;],
- [&#39;Jonotthan Harrison&#39;],
- [&#39;Kony Ealy&#39;],
- [&#39;Bruce Carter&#39;],
- [&#39;Jeremy Kerley&#39;],
- [&#39;Julian Stanford&#39;],
- [&#39;Dakota Dozier&#39;],
- [&#39;Bryce Petty&#39;],
- [&#39;Jordan Jenkins&#39;],
- [&#39;Terrence Brooks&#39;],
- [&#39;David Bass&#39;],
- [&#39;Juston Burris&#39;],
- [&#39;ArDarius Stewart&#39;],
- [&#39;Rontez Miles&#39;],
- [&#39;Brent Qvale&#39;],
- [&#39;Darryl Roberts&#39;],
- [&#39;Neal Sterling&#39;],
- [&#39;Will Tye&#39;],
- [&#39;Brandon Shell&#39;],
- [&#39;Chad Hansen&#39;],
- [&#39;Lac Edwards&#39;],
- [&#39;Charone Peake&#39;],
- [&#39;Robby Anderson&#39;],
- [&#39;Eric Tomlinson&#39;],
- [&#39;Jordan Leggett&#39;],
- [&#39;Dylan Donahue&#39;],
- [&#39;Elijah McGuire&#39;],
- [&#39;Derrick Jones&#39;],
- [&#39;Thomas Hennessy&#39;],
- [&#39;Lawrence Thomas&#39;]]
+ [&#39;Bilal Powell&#39;]]
 </pre></div>
 
 
-<h2>Player Position and Salary</h2>
-<p>Pick out the position of each player and the Cap Hit</p>
-<p>The resulting data type of get_text() is a string.  player_cap_hit will need to be converted to an int once loaded into a dataframe.</p>
-<p>There are 53 rows with salaries, and 110 positions.  The number of positions makes sense and matches to what and NFL active roster should be, but why are there 110 salaries?  </p>
-<div class="highlight"><pre><span></span><span class="n">player_cap_hit</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="n">cap_info_rows</span> <span class="o">=</span> <span class="n">soup</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="s2">&quot;td&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;class&quot;</span><span class="p">:</span><span class="s2">&quot; right result &quot;</span><span class="p">})</span>
-<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cap_info_rows</span><span class="p">:</span>
-    <span class="n">player_cap_hit</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">get_text</span><span class="p">())</span>
+<h2>Get ALL the data</h2>
+<p>This pattern gets all the TD cells from ALL the rows.  Earlier, I was using a pattern to extract one column at a time and then smash them all back together, but this is way more effecient.  </p>
+<div class="highlight"><pre><span></span><span class="n">player_data</span> <span class="o">=</span> <span class="p">[[</span><span class="n">td</span><span class="o">.</span><span class="n">getText</span><span class="p">()</span> <span class="k">for</span> <span class="n">td</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">findAll</span><span class="p">(</span><span class="s1">&#39;td&#39;</span><span class="p">)]</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">))]</span>
 
-<span class="nb">len</span><span class="p">(</span><span class="n">player_cap_hit</span><span class="p">)</span>
+<span class="c1">#Slice the list to show only the 1st record</span>
+<span class="n">player_data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 </pre></div>
 
 
-<div class="highlight"><pre><span></span>53
-</pre></div>
-
-
-<div class="highlight"><pre><span></span><span class="n">player_position</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="n">position_rows</span> <span class="o">=</span> <span class="n">soup</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="s2">&quot;td&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;class&quot;</span><span class="p">:</span> <span class="s2">&quot; center small&quot;</span><span class="p">})</span>
-<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">position_rows</span><span class="p">:</span>
-    <span class="n">player_position</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">get_text</span><span class="p">())</span>
-    <span class="c1">#print(player_position)</span>
-<span class="nb">len</span><span class="p">(</span><span class="n">player_position</span><span class="p">)</span>
-</pre></div>
-
-
-<div class="highlight"><pre><span></span>110
+<div class="highlight"><pre><span></span>[&#39;Wilkerson\nMuhammad Wilkerson &#39;,
+ &#39;DE&#39;,
+ &#39;$14,750,000&#39;,
+ &#39;$3,000,000&#39;,
+ &#39;-&#39;,
+ &#39;-&#39;,
+ &#39;$250,000&#39;,
+ &#39;-&#39;,
+ &#39;-&#39;,
+ &#39;($27,000,000)&#39;,
+ &#39;$18,000,000 &#39;,
+ &#39;12.17&#39;]
 </pre></div>
 
 
 <div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
-
-<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;position&quot;</span><span class="p">:</span> <span class="n">player_position</span><span class="p">,</span> <span class="s2">&quot;player names&quot;</span><span class="p">:</span> <span class="n">player_names</span><span class="p">})</span>
-</pre></div>
-
-
-<div class="highlight"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
-</pre></div>
-
-
-<div>
-<style>
-    .dataframe thead tr:only-child th {
-        text-align: right;
-    }
-
-    .dataframe thead th {
-        text-align: left;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>player names</th>
-      <th>position</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>Wilkerson\nMuhammad Wilkerson</td>
-      <td>DE</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>Skrine\nBuster Skrine</td>
-      <td>CB</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>Winters\nBrian Winters</td>
-      <td>G</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>Carpenter\nJames Carpenter</td>
-      <td>G</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>McCown\nJosh McCown</td>
-      <td>QB</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-
-<div class="highlight"><pre><span></span><span class="n">df1</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;Names&quot;</span><span class="p">:</span> <span class="n">final_player_names</span><span class="p">,</span><span class="s2">&quot;Cap Hit&quot;</span><span class="p">:</span> <span class="n">player_cap_hit</span><span class="p">})</span>
-</pre></div>
-
-
-<div class="highlight"><pre><span></span><span class="n">df1</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
-</pre></div>
-
-
-<div>
-<style>
-    .dataframe thead tr:only-child th {
-        text-align: right;
-    }
-
-    .dataframe thead th {
-        text-align: left;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>Cap Hit</th>
-      <th>Names</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>$18,000,000</td>
-      <td>[Muhammad Wilkerson]</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>$8,500,000</td>
-      <td>[Buster Skrine]</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>$8,000,000</td>
-      <td>[Brian Winters]</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>$6,805,000</td>
-      <td>[James Carpenter]</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>$6,500,000</td>
-      <td>[Josh McCown]</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-
-<div class="highlight"><pre><span></span><span class="n">df1</span><span class="o">.</span><span class="n">dtypes</span>
-</pre></div>
-
-
-<div class="highlight"><pre><span></span>Cap Hit    object
-Names      object
-dtype: object
-</pre></div>
-
-
-<div class="highlight"><pre><span></span><span class="n">player_data</span> <span class="o">=</span> <span class="p">[[</span><span class="n">td</span><span class="o">.</span><span class="n">getText</span><span class="p">()</span> <span class="k">for</span> <span class="n">td</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">findAll</span><span class="p">(</span><span class="s1">&#39;td&#39;</span><span class="p">)]</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">))]</span>
-</pre></div>
-
-
-<div class="highlight"><pre><span></span><span class="n">df2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">player_data</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+<span class="n">df2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">player_data</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
 <span class="n">df2</span> <span class="o">=</span> <span class="n">df2</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">df2</span><span class="o">.</span><span class="n">index</span><span class="p">[[</span><span class="mi">0</span><span class="p">]])</span>
 <span class="n">df2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">final_player_names</span>
 </pre></div>
 
 
-<div class="highlight"><pre><span></span><span class="n">df2</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">columns_headers</span><span class="p">]</span>
+<h2>Clean the Data</h2>
+<p>Now that we have all the data we need to clean it before it will be in it's final usable format</p>
+<div class="highlight"><pre><span></span><span class="c1">#Update the column headers</span>
+<span class="n">df2</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">columns_headers</span><span class="p">]</span>
 </pre></div>
 
 
@@ -1249,8 +1088,143 @@ dtype: object
       <td>-</td>
       <td>-</td>
       <td>($27,000,000)</td>
+      <td>$18,000,000</td>
+      <td>12.17</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>[Buster Skrine]</td>
+      <td>CB</td>
+      <td>$6,000,000</td>
+      <td>$1,250,000</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>$1,250,000</td>
+      <td>-</td>
+      <td>($11,000,000)</td>
+      <td>$8,500,000</td>
+      <td>5.75</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>[Brian Winters]</td>
+      <td>G</td>
+      <td>$1,000,000</td>
+      <td>-</td>
+      <td>$7,000,000</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>($22,000,000)</td>
+      <td>$8,000,000</td>
+      <td>5.41</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>[James Carpenter]</td>
+      <td>G</td>
+      <td>$4,450,000</td>
+      <td>$875,000</td>
+      <td>$250,000</td>
+      <td>-</td>
+      <td>-</td>
+      <td>$1,230,000</td>
+      <td>-</td>
+      <td>($8,660,000)</td>
+      <td>$6,805,000</td>
+      <td>4.60</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>[Josh McCown]</td>
+      <td>QB</td>
+      <td>$3,000,000</td>
+      <td>$3,000,000</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>$500,000</td>
+      <td>($6,000,000)</td>
+      <td>$6,500,000</td>
+      <td>4.39</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="highlight"><pre><span></span><span class="c1">#Use a regex to turn the Cap Hit column into a foat so that we can do math on it</span>
+<span class="n">df2</span><span class="p">[</span><span class="s1">&#39;Cap Hit&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">df2</span><span class="p">[</span><span class="s1">&#39;Cap Hit&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span> <span class="s1">&#39;[\$,)]&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">regex</span><span class="o">=</span><span class="bp">True</span> <span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span> <span class="s1">&#39;[(]&#39;</span><span class="p">,</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="n">regex</span><span class="o">=</span><span class="bp">True</span> <span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">))</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="c1">#Sanity check to make sure the above worked</span>
+<span class="n">df2</span><span class="p">[</span><span class="s1">&#39;Cap Hit&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>121989564.0
+</pre></div>
+
+
+<h2>Mo Wilkerson makes $1.25M Per Game</h2>
+<p>Assuming 16 games in a season and he makes all of his bonuses.  </p>
+<div class="highlight"><pre><span></span><span class="n">df2</span><span class="p">[</span><span class="s1">&#39;Player Salary Per Game&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df2</span><span class="p">[</span><span class="s1">&#39;Cap Hit&#39;</span><span class="p">]</span><span class="o">/</span><span class="mi">16</span>
+<span class="n">df2</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Active Players  (53)</th>
+      <th>Pos.</th>
+      <th>Base Salary</th>
+      <th>Signing Bonus</th>
+      <th>Roster Bonus</th>
+      <th>Option Bonus</th>
+      <th>Workout Bonus</th>
+      <th>Restruc. Bonus</th>
+      <th>Misc.</th>
+      <th>Dead Cap</th>
+      <th>Cap Hit</th>
+      <th>Cap %</th>
+      <th>Player Salary Per Game</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>1</th>
+      <td>[Muhammad Wilkerson]</td>
+      <td>DE</td>
+      <td>$14,750,000</td>
+      <td>$3,000,000</td>
+      <td>-</td>
+      <td>-</td>
+      <td>$250,000</td>
+      <td>-</td>
+      <td>-</td>
+      <td>($27,000,000)</td>
       <td>18000000.0</td>
       <td>12.17</td>
+      <td>1125000.0</td>
     </tr>
     <tr>
       <th>2</th>
@@ -1266,6 +1240,7 @@ dtype: object
       <td>($11,000,000)</td>
       <td>8500000.0</td>
       <td>5.75</td>
+      <td>531250.0</td>
     </tr>
     <tr>
       <th>3</th>
@@ -1281,6 +1256,7 @@ dtype: object
       <td>($22,000,000)</td>
       <td>8000000.0</td>
       <td>5.41</td>
+      <td>500000.0</td>
     </tr>
     <tr>
       <th>4</th>
@@ -1296,6 +1272,7 @@ dtype: object
       <td>($8,660,000)</td>
       <td>6805000.0</td>
       <td>4.60</td>
+      <td>425312.5</td>
     </tr>
     <tr>
       <th>5</th>
@@ -1311,57 +1288,44 @@ dtype: object
       <td>($6,000,000)</td>
       <td>6500000.0</td>
       <td>4.39</td>
+      <td>406250.0</td>
     </tr>
   </tbody>
 </table>
 </div>
 
-<div class="highlight"><pre><span></span><span class="n">df2</span><span class="p">[</span><span class="s1">&#39;Cap Hit&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">df2</span><span class="p">[</span><span class="s1">&#39;Cap Hit&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span> <span class="s1">&#39;[\$,)]&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">regex</span><span class="o">=</span><span class="bp">True</span> <span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span> <span class="s1">&#39;[(]&#39;</span><span class="p">,</span><span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="n">regex</span><span class="o">=</span><span class="bp">True</span> <span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">))</span>
-</pre></div>
-
-
-<div class="highlight"><pre><span></span><span class="n">df2</span><span class="p">[</span><span class="s1">&#39;Cap Hit&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-</pre></div>
-
-
-<div class="highlight"><pre><span></span>121989564.0
-</pre></div>
-
-
-<div class="highlight"><pre><span></span><span class="n">barchart_columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Active Players  (53)&#39;</span><span class="p">,</span> <span class="s1">&#39;Cap Hit&#39;</span><span class="p">]</span>
+<div class="highlight"><pre><span></span><span class="c1">#Plot the salaries for each player in a barchart</span>
+<span class="n">barchart_columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Active Players  (53)&#39;</span><span class="p">,</span> <span class="s1">&#39;Cap Hit&#39;</span><span class="p">]</span>
 <span class="n">barchart</span> <span class="o">=</span> <span class="n">df2</span><span class="p">[</span><span class="n">barchart_columns</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s1">&#39;bar&#39;</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">9</span><span class="p">))</span>
 <span class="n">barchart</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;final_player_names&quot;</span><span class="p">)</span>
 </pre></div>
 
 
-<div class="highlight"><pre><span></span>&lt;matplotlib.text.Text at 0x116e11048&gt;
+<div class="highlight"><pre><span></span>&lt;matplotlib.text.Text at 0x10b92ae80&gt;
 </pre></div>
 
 
-<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<div class="highlight"><pre><span></span><span class="c1">#Display the chart</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 
 
 <p><img alt="png" src="output_28_0.png"></p>
-<div class="highlight"><pre><span></span>
-</pre></div>
-
-
 <p>Title: My first pelican post
 Date: 2017-09-30 10:20
-Modified: 2010-09-30 19:30
+Modified: 2010-10-09 19:30
 Category: Python, Pelican, misc
 Tags: pelican, publishing, misc
-Slug: my-super-post
+Slug: my-first-post
 Authors: Wahid Contractor
 Summary: Short version for index and feeds</p>
-<p class="subheader">Category: <a href="./category/python-pelican-misc.html">Python, Pelican, misc</a>
+<p class="subheader">Category: <a href="./category/web-scraping.html">Web Scraping</a>
 
     Tagged: 
-    <a href="./tag/pelican.html">pelican </a>
-    <a href="./tag/publishing.html">publishing </a>
-    <a href="./tag/misc.html">misc </a>
+    <a href="./tag/python.html">Python </a>
+    <a href="./tag/pandas.html">Pandas </a>
+    <a href="./tag/web-scraping.html">Web Scraping </a>
 </p>
 
 
@@ -1383,6 +1347,7 @@ Summary: Short version for index and feeds</p>
         <h5 class="sidebar-title">Categories</h5>
         <ul class="side-nav">
             <li><a href="./category/python-pelican-misc.html">Python, Pelican, misc</a></li>
+            <li><a href="./category/web-scraping.html">Web Scraping</a></li>
    
         </ul>
 
