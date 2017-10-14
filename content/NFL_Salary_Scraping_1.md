@@ -1,12 +1,11 @@
-
-Title: NFL Salary Scraping - Part 1
-Date: 2017-10-10 10:20
-Modified: 2010-10-12 19:30
-Category: Python, Pelican, misc
-Tags: Python, Pandas, Web Scraping, Matplotlib
-Slug: nfl-salary   
-Authors: Wahid Contractor
-Summary: Web Scraping NFL Salary Data Using Python
+Title:NFL Salary Scraping - Part 1
+Date:2017-10-10 10:20
+Modified:2010-10-12 19:30
+Category:Python, Pelican, misc
+Tags:Python, Pandas, Web Scraping, Matplotlib
+Slug:nfl-salary   
+Authors:Wahid Contractor
+Summary:Web Scraping NFL Salary Data Using Python
 # NFL Team Salary Scraping - Part 1
 
 
@@ -1361,11 +1360,3 @@ plt.show()
 
 ![png](output_30_0.png)
 
-Title: My first pelican post
-Date: 2017-09-30 10:20
-Modified: 2010-10-09 19:30
-Category: Python, Pelican, misc
-Tags: pelican, publishing, misc
-Slug: my-first-post
-Authors: Wahid Contractor
-Summary: Short version for index and feeds

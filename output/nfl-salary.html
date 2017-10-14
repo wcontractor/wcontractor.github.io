@@ -4,7 +4,7 @@
     <!-- Set the viewport width to device width for mobile -->
     <meta name="viewport" content="width=device-width" />
 
-    <title>NFL Salary Web Scraping - Part 1</title>
+    <title>NFL Salary Scraping - Part 1</title>
 
     <link rel="stylesheet" href="./theme/css/normalize.css" />
     <link rel="stylesheet" href="./theme/css/foundation.min.css" />
@@ -45,7 +45,7 @@
 <article>
     <header>
         <h3 class="article-title"><a href="./nfl-salary.html" rel="bookmark"
-        title="Permalink to NFL Salary Web Scraping - Part 1">NFL Salary Web Scraping - Part 1</a></h3>
+        title="Permalink to NFL Salary Scraping - Part 1">NFL Salary Scraping - Part 1</a></h3>
     </header>
 
 <h6 class="subheader" title="2017-10-10T10:20:00-04:00">Tue 10 October 2017
@@ -1295,13 +1295,17 @@ It is important to note here, that I opened the sample_page with read binary fla
 </div>
 
 <div class="highlight"><pre><span></span><span class="c1">#Plot the salaries for each player in a barchart</span>
+<span class="c1">#Created a new dataframe with only those columns needed - this may not have been necessary</span>
 <span class="n">barchart_columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Active Players  (53)&#39;</span><span class="p">,</span> <span class="s1">&#39;Cap Hit&#39;</span><span class="p">]</span>
-<span class="n">barchart</span> <span class="o">=</span> <span class="n">df2</span><span class="p">[</span><span class="n">barchart_columns</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s1">&#39;bar&#39;</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">9</span><span class="p">))</span>
+<span class="n">df_for_chart</span> <span class="o">=</span> <span class="n">df2</span><span class="p">[</span><span class="n">barchart_columns</span><span class="p">]</span>
+<span class="c1">#Reindex the datafram so that the labels on the chart would show up</span>
+<span class="n">df_for_chart</span> <span class="o">=</span> <span class="n">df_for_chart</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="n">df2</span><span class="p">[</span><span class="s1">&#39;Active Players  (53)&#39;</span><span class="p">])</span>
+<span class="n">barchart</span> <span class="o">=</span> <span class="n">df_for_chart</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s1">&#39;bar&#39;</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">9</span><span class="p">))</span>
 <span class="n">barchart</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;final_player_names&quot;</span><span class="p">)</span>
 </pre></div>
 
 
-<div class="highlight"><pre><span></span>&lt;matplotlib.text.Text at 0x10b92ae80&gt;
+<div class="highlight"><pre><span></span>&lt;matplotlib.text.Text at 0x117fef208&gt;
 </pre></div>
 
 
@@ -1312,20 +1316,24 @@ It is important to note here, that I opened the sample_page with read binary fla
 
 
 <p><img alt="png" src="output_28_0.png"></p>
-<p>Title: My first pelican post
-Date: 2017-09-30 10:20
-Modified: 2010-10-09 19:30
-Category: Python, Pelican, misc
-Tags: pelican, publishing, misc
-Slug: my-first-post
-Authors: Wahid Contractor
-Summary: Short version for index and feeds</p>
-<p class="subheader">Category: <a href="./category/web-scraping.html">Web Scraping</a>
+<h2>Average Salary By Position</h2>
+<p>Thought it would be interesting to group the players by position and see the spend by position.
+Perhaps I'll create another higher level grouping by creating a new variable and taging all of the defensive positions as 'DEF' and all the offensive positions as 'OFF' and then group them that way.  With that I'll see how the team ranks overall as on defense as compared to their spend.  </p>
+<div class="highlight"><pre><span></span><span class="n">grouped_data</span> <span class="o">=</span> <span class="n">df2</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">df2</span><span class="p">[</span><span class="s1">&#39;Pos.&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+<span class="n">grouped_data</span> <span class="o">=</span> <span class="n">grouped_data</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s1">&#39;Cap Hit&#39;</span><span class="p">,</span> <span class="n">ascending</span> <span class="o">=</span> <span class="bp">False</span><span class="p">)</span>
+<span class="n">barchart_by_position</span> <span class="o">=</span> <span class="n">grouped_data</span><span class="p">[</span><span class="s1">&#39;Cap Hit&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s1">&#39;bar&#39;</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">9</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+
+<p><img alt="png" src="output_30_0.png"></p>
+<p class="subheader">Category: <a href="./category/python-pelican-misc.html">Python, Pelican, misc</a>
 
     Tagged: 
     <a href="./tag/python.html">Python </a>
     <a href="./tag/pandas.html">Pandas </a>
     <a href="./tag/web-scraping.html">Web Scraping </a>
+    <a href="./tag/matplotlib.html">Matplotlib </a>
 </p>
 
 
@@ -1347,7 +1355,6 @@ Summary: Short version for index and feeds</p>
         <h5 class="sidebar-title">Categories</h5>
         <ul class="side-nav">
             <li><a href="./category/python-pelican-misc.html">Python, Pelican, misc</a></li>
-            <li><a href="./category/web-scraping.html">Web Scraping</a></li>
    
         </ul>
 
