@@ -58,11 +58,11 @@ A few words about markdown - [Using GitHub Flavored Markdown](https://guides.git
 
 ## Future Courses
 
-- Coursera: Machine Learning 5 Part Specialization Created by The University of Washington
-- https://www.coursera.org/learn/ml-foundations/home/welcome Machine Learning Foundations: A Case Study Approach
-- https://www.coursera.org/learn/ml-regression Machine Learning: Regression
-- https://www.coursera.org/learn/ml-classification Machine Learning: Classification
-- https://www.coursera.org/learn/ml-clustering-and-retrieval Machine Learning: Clustering & Retrieval
+- [Coursera: Machine Learning 5 Part Specialization by The University of Washington]
+- [Machine Learning Foundations: A Case Study Approach](https://www.coursera.org/learn/ml-foundations/home/welcome) 
+- [Machine Learning: Linear Regression](https://www.coursera.org/learn/ml-regression Machine Learning: Regression)
+- [Machine Learning: Classification](https://www.coursera.org/learn/ml-classification Machine Learning: Classification)
+- [Machine Learning: Clusterning & Retrieval](https://www.coursera.org/learn/ml-clustering-and-retrieval Machine Learning: Clustering & Retrieval)
 
 
 Andrew Ng's course built the cirriculum for teaching Machine Learning. https://www.coursera.org/learn/machine-learning
