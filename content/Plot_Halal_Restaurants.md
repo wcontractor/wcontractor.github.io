@@ -3,7 +3,7 @@ Date:2017-12-24 17:00
 Modified:2017-12-24 17:00
 Category:Python
 Tags:Python
-Slug:plot-halal-restuarants
+Slug:plot-halal-restaurants
 Authors:Wahid Contractor
 Summary:Plot Halal Restaurants from Yelp using Google Maps API
 
@@ -113,12 +113,3 @@ fig
 
 
     A Jupyter Widget
-
-Title:NFL Salary Scraping - Part 2
-Date:2017-11-26 17:00
-Modified:2010-11-26 17:00
-Category:Python, Pelican, misc
-Tags:Python, Pandas, Web Scraping, Matplotlib
-Slug:nfl-salary-part2
-Authors:Wahid Contractor
-Summary:Part 2 - Web Scraping NFL Salary Data Using Python
