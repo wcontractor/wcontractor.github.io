@@ -83,7 +83,7 @@ The information in gmaps documenation is really quite good.  Check it out [jupyt
 
 ```python
 
-gmaps.configure(api_key="AIzaSyAu98yWshYpM56FshMg5m2DN5PfAUWpzkI")
+gmaps.configure(api_key="AI...")
 marker_locations = [
 (-34.0, -59.166672),
 (-32.23333, -64.433327),
