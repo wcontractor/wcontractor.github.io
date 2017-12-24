@@ -15,7 +15,6 @@
                 <h1><a href="/">Wcontractor.github.io </a></h1>
                 <nav><ul>
                     <li class="active"><a href="/category/python.html">Python</a></li>
-                    <li><a href="/category/python-misc.html">Python, misc</a></li>
                     <li><a href="/category/python-pelican-misc.html">Python, Pelican, misc</a></li>
                 </ul>
                 </nav>
@@ -23,59 +22,130 @@
 
             <aside id="featured" class="body">
                 <article>
-                    <h1 class="entry-title"><a href="/python-learning.html">A Pythonic Journey</a></h1>
+                    <h1 class="entry-title"><a href="/plot-halal-restuarants.html">Plot Yelp Halal Restaurants</a></h1>
+<footer class="post-info">
+        <span>Sun 24 December 2017</span>
+<span>| tags: <a href="/tag/python.html">Python</a></span>
+</footer><!-- /.post-info --><h1>Background and Overview</h1>
+<p>In my first 2 Python related posts I used techniques to scrape data from the web and turn that into information.  In case you missed it check out my <a href="https://wcontractor.github.io/nfl-salary.html">NFL Salary Scraping Part 1</a> and <a href="https://wcontractor.github.io/nfl-salary-part2.html">Part 2</a> where I show how to use requests, BeautifulSoup, Pandas, and Matplotlib to learn that the highest paid players in the NFL in 2017 are Larry Fitzgerald and Patrick Peterson.</p>
+<p>This post is an evolution from those posts, instead of using scraping data I'm using the Yelp and Google maps APIs to collect information and present the results on a map with markers.</p>
+<p>For context I used the Yelp Fusion API to peform a business search for term of 'halal'.  Now by no means am I an expert on this topic, but the word halal mean permissable to eat and my wife and my wife and I frequent these restaurants so I thought it would be interesting to map those locations near our house.</p>
+<div class="highlight"><pre><span></span><span class="c1">#imports using json, gmaps, and pandas</span>
+<span class="kn">import</span> <span class="nn">json</span><span class="o">,</span> <span class="nn">gmaps</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+</pre></div>
+
+
+<h2>Load Data</h2>
+<p>Admittedly to get the data from the Yelp API I used Postman instead of interfacing with the API directly.  This was just faster to get a JSON file of the results I was looking for.  To do this you need to create an app and get an API Key from Yelps Developer website.  I saved the results from Postman into a text file and then worked locally from there.</p>
+<div class="highlight"><pre><span></span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;Yelp_Halal_Businesses.JSON&quot;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="nb">file</span><span class="p">:</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="nb">file</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+<span class="n">json_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</pre></div>
+
+
+<h2>Get Locations</h2>
+<p>In the cell below I iterate over the items in json_Data and create 2 lists that store that latitude and longitude.  I then zip those 2 lists together to create 1 so that I can pass the coordinates of the halal restaurants to gmaps.</p>
+<div class="highlight"><pre><span></span><span class="n">lat</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="nb">long</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">json_data</span><span class="p">[</span><span class="s1">&#39;businesses&#39;</span><span class="p">]:</span>
+    <span class="n">lat</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s1">&#39;coordinates&#39;</span><span class="p">][</span><span class="s1">&#39;latitude&#39;</span><span class="p">])</span>
+    <span class="nb">long</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s1">&#39;coordinates&#39;</span><span class="p">][</span><span class="s1">&#39;longitude&#39;</span><span class="p">])</span>
+
+<span class="n">lat_long</span> <span class="o">=</span> <span class="nb">list</span><span class="p">((</span><span class="nb">zip</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span><span class="nb">long</span><span class="p">)))</span>
+<span class="n">lat_long</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>[(40.56378, -74.694418),
+ (40.5661650002003, -74.6275533735752),
+ (40.55492, -74.52609),
+ (40.5036928033583, -74.6444269892345),
+ (40.62008, -74.49021),
+ (40.55527, -74.52661),
+ (40.598919, -74.480728),
+ (40.437622, -74.538564),
+ (40.6171176417404, -74.494637063977),
+ (40.61933, -74.4927699),
+ (40.4340821413289, -74.5478186003373),
+ (40.62008, -74.49021),
+ (40.4473744, -74.4966087),
+ (40.4974297303228, -74.4482234326057),
+ (40.4379627796526, -74.5361950967858),
+ (40.5104061, -74.409281),
+ (40.4345526013837, -74.5460039343956),
+ (40.4977595713994, -74.4490539963252),
+ (40.5721031, -74.3360702),
+ (40.4992091, -74.4272637)]
+</pre></div>
+
+
+<h2>Test the Google Maps API</h2>
+<p>The code snippet below is a copy/paste from the gmaps documentation.  I did this to make sure I had the Google API Key setup correctly.  </p>
+<p>The information in gmaps documenation is really quite good.  Check it out <a href="https://media.readthedocs.org/pdf/jupyter-gmaps/latest/jupyter-gmaps.pdf">jupyter-gmaps.pdf</a> </p>
+<div class="highlight"><pre><span></span><span class="n">gmaps</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;AIzaSyAu98yWshYpM56FshMg5m2DN5PfAUWpzkI&quot;</span><span class="p">)</span>
+<span class="n">marker_locations</span> <span class="o">=</span> <span class="p">[</span>
+<span class="p">(</span><span class="o">-</span><span class="mf">34.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">59.166672</span><span class="p">),</span>
+<span class="p">(</span><span class="o">-</span><span class="mf">32.23333</span><span class="p">,</span> <span class="o">-</span><span class="mf">64.433327</span><span class="p">),</span>
+<span class="p">(</span><span class="mf">40.166672</span><span class="p">,</span> <span class="mf">44.133331</span><span class="p">),</span>
+<span class="p">(</span><span class="mf">51.216671</span><span class="p">,</span> <span class="mf">5.0833302</span><span class="p">),</span>
+<span class="p">(</span><span class="mf">51.333328</span><span class="p">,</span> <span class="mf">4.25</span><span class="p">)</span>
+<span class="p">]</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">gmaps</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">markers</span> <span class="o">=</span> <span class="n">gmaps</span><span class="o">.</span><span class="n">marker_layer</span><span class="p">(</span><span class="n">marker_locations</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">add_layer</span><span class="p">(</span><span class="n">markers</span><span class="p">)</span>
+<span class="n">fig</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>A Jupyter Widget
+</pre></div>
+
+
+<h2>Plot the locations</h2>
+<div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">gmaps</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">markers</span> <span class="o">=</span> <span class="n">gmaps</span><span class="o">.</span><span class="n">marker_layer</span><span class="p">(</span><span class="n">lat_long</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">add_layer</span><span class="p">(</span><span class="n">markers</span><span class="p">)</span>
+<span class="n">fig</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>A Jupyter Widget
+</pre></div>
+
+
+<p>Title:NFL Salary Scraping - Part 2
+Date:2017-11-26 17:00
+Modified:2010-11-26 17:00
+Category:Python, Pelican, misc
+Tags:Python, Pandas, Web Scraping, Matplotlib
+Slug:nfl-salary-part2
+Authors:Wahid Contractor
+Summary:Part 2 - Web Scraping NFL Salary Data Using Python</p>                </article>
+            </aside><!-- /#featured -->
+                <section id="content" class="body">
+                    <h1>Other articles</h1>
+                    <ol id="posts-list" class="hfeed">
+
+            <li><article class="hentry">
+                <header>
+                    <h1><a href="/python-learning.html" rel="bookmark"
+                           title="Permalink to A Pythonic Journey">A Pythonic Journey</a></h1>
+                </header>
+
+                <div class="entry-content">
 <footer class="post-info">
         <span>Sat 14 October 2017</span>
 <span>| tags: <a href="/tag/python.html">Python</a><a href="/tag/learning.html">Learning</a><a href="/tag/mooc.html">MOOC</a><a href="/tag/books.html">Books</a></span>
-</footer><!-- /.post-info --><h2>Background</h2>
-<p>One of the great things about Python is the ease of access to learning from traditional books and online materials and websites. Here is the path that I have been on for the better part of year.  </p>
-<h2>Current Course</h2>
-<p><a href="http://cs109.github.io/2015/">Harvard CS109</a> is a great course to learn more about Data Science the supporting methods of data engineering, data analysis, data visualization.  Taking this course not only broadens your knowledge of Python, but teaches you good patterns for implementing the tools and solving real world problems.  I would <strong>highly</strong> recommend this one.  The lectures and labs are available online from Harvard, but the homeworks were only posted for the 2013 course. </p>
-<blockquote>
-<p>This course introduces methods for five key facets of an investigation: data wrangling, cleaning, and sampling to get a suitable data set; data management to be able to access big data quickly and reliably; exploratory data analysis to generate hypotheses and intuition; prediction based on statistical methods such as regression and classification; and communication of results through visualization, stories, and interpretable summaries.</p>
-</blockquote>
-<h2>Massive Open Online Courses(MOOCs)</h2>
-<ul>
-<li>Coursera: <a href="https://www.coursera.org/specializations/python">Python for Everybody - A 5 part specialization</a></li>
-</ul>
-<p>This Coursera course is touch by Dr. Charles Severance from the University of Michigan and is based on the book Python for Informatics.  This is a great place to start your journey in Python.  The course covers the basics from syntax and data dtypes to conditionals.  If you are new to programming or Python I would <strong>highly</strong> recommend starting here.  Ther are some data types like tuples and patterns like how to iterate over a dictionary that you can use over and over again in your journey.  This course also covers some advanced topics like how to work with an API and write data to a SQLite database.</p>
-<ul>
-<li>Coursera: <a href="https://www.coursera.org/learn/python-data-analysis/">Introduction to Python in Data Analysis</a></li>
-</ul>
-<p>Although this course is titled introduction, it is certainly not an introductory course.  You should have a firm grasp of working with data, cleaning data, and processing data prior to taking this.  The best part of this course were the latter weeks where the statistical concepts where introduced.  Using Python and Pandas to summarize the data and perform more complex operations like t-tests. </p>
-<ul>
-<li>Udacity: <a href="https://classroom.udacity.com/courses/ud036">Programming Foundations with Python</a></li>
-</ul>
-<p>Once you have the basics under your belt this is a good second step.  It follows a use case style approach and has a heavy emphasis on building your code using functions for repeatabilty and extensibility.  </p>
-<ul>
-<li>edX: <a href="https://courses.edx.org/courses/course-v1:HarvardX+PH526x+3T2016/course/">Using Python for Research</a></li>
-</ul>
-<p>This edX course is one of the first courses I took that really emphasised the algorithms and math used in Data Science.  After a couple of weeks of introducing some basic concepts and the numpy library it dives into uses cases such as translating a DNA sequence and doing a correlation of whiskey based on their flavor profile. </p>
-<p>Not directly related to Data Science or Machine Learning, but courses that get back to the fun!
-- Coursera: <a href="https://www.coursera.org/learn/interactive-python-1">An Introduction to Interactive Programming in Python (Part 1)</a>
-- Coursera: <a href="https://www.coursera.org/learn/interactive-python-2">An Introduction to Interactive Programming in Python (Part 2)</a></p>
-<h2>Books and other Learning Material</h2>
-<p><a href="http://py4inf.com/book.php/">Python for Informatics</a> - This is the book the Coursea Course Python for Everybody uses.</p>
-<p><a href="http://greenteapress.com/wp/think-python-2e/">Think Python 2e</a> - How to Think Like a Computer Scientist </p>
-<p>Anaconda - Open Data Science Platform - <a href="https://www.continuum.io/anaconda-overview">Download</a></p>
-<p>A few words about markdown - <a href="https://guides.github.com/features/mastering-markdown/">Using GitHub Flavored Markdown</a></p>
-<h2>Future Courses</h2>
-<ul>
-<li>[Coursera: Machine Learning 5 Part Specialization by The University of Washington]</li>
-<li><a href="https://www.coursera.org/learn/ml-foundations/home/welcome">Machine Learning Foundations: A Case Study Approach</a> </li>
-<li><a href="https://www.coursera.org/learn/ml-regression Machine Learning: Regression">Machine Learning: Linear Regression</a></li>
-<li><a href="https://www.coursera.org/learn/ml-classification Machine Learning: Classification">Machine Learning: Classification</a></li>
-<li><a href="https://www.coursera.org/learn/ml-clustering-and-retrieval Machine Learning: Clustering &amp; Retrieval">Machine Learning: Clusterning &amp; Retrieval</a></li>
-</ul>
-<p>Andrew Ng's course built the cirriculum for teaching Machine Learning. https://www.coursera.org/learn/machine-learning</p>
-<blockquote>
-<p>In this module, we introduce the core idea of teaching a computer to learn concepts using data—without being explicitly programmed. </p>
-</blockquote>                </article>
+</footer><!-- /.post-info -->                <p>A learning journey of thinking pythonically and growing skill development skill sets</p>
+                <a class="readmore" href="/python-learning.html">read more</a>
+                </div><!-- /.entry-content -->
+            </article></li>
+            </ol><!-- /#posts-list -->
 <p class="paginator">
     Page 1 / 1
 </p>
-            </aside><!-- /#featured -->
-            </ol><!-- /#posts-list -->
             </section><!-- /#content -->
         <section id="extras" class="body">
                 <div class="blogroll">

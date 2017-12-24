@@ -1,11 +1,11 @@
-Title:Plot Halal Restaurants
+Title:Plot Yelp Halal Restaurants 
 Date:2017-12-24 17:00
 Modified:2017-12-24 17:00
-Category:Python, misc
+Category:Python
 Tags:Python
-Slug:plot-halal-restaurants
+Slug:plot-halal-restuarants
 Authors:Wahid Contractor
-Summary:Plot Restaurants from Yelp
+Summary:Plot Halal Restaurants from Yelp using Google Maps API
 
 # Background and Overview
 In my first 2 Python related posts I used techniques to scrape data from the web and turn that into information.  In case you missed it check out my [NFL Salary Scraping Part 1](https://wcontractor.github.io/nfl-salary.html) and [Part 2](https://wcontractor.github.io/nfl-salary-part2.html) where I show how to use requests, BeautifulSoup, Pandas, and Matplotlib to learn that the highest paid players in the NFL in 2017 are Larry Fitzgerald and Patrick Peterson.
@@ -29,7 +29,7 @@ Admittedly to get the data from the Yelp API I used Postman instead of interfaci
 with open("Yelp_Halal_Businesses.JSON", 'r') as file:
     data = file.read()
 
-json_data = js.loads(data)
+json_data = json.loads(data)
 ```
 
 ## Get Locations
@@ -83,7 +83,7 @@ The information in gmaps documenation is really quite good.  Check it out [jupyt
 
 ```python
 
-gmaps.configure(api_key="AI...")
+gmaps.configure(api_key="AIzaSyAu98yWshYpM56FshMg5m2DN5PfAUWpzkI")
 marker_locations = [
 (-34.0, -59.166672),
 (-32.23333, -64.433327),
@@ -114,3 +114,11 @@ fig
 
     A Jupyter Widget
 
+Title:NFL Salary Scraping - Part 2
+Date:2017-11-26 17:00
+Modified:2010-11-26 17:00
+Category:Python, Pelican, misc
+Tags:Python, Pandas, Web Scraping, Matplotlib
+Slug:nfl-salary-part2
+Authors:Wahid Contractor
+Summary:Part 2 - Web Scraping NFL Salary Data Using Python
