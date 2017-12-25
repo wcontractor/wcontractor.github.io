@@ -108,16 +108,29 @@
 </pre></div>
 
 
+<div class="highlight"><pre><span></span><span class="o">%%</span><span class="n">HTML</span>
+<span class="o">&lt;</span><span class="n">img</span> <span class="n">src</span><span class="o">=</span><span class="s2">&quot;map_1.png&quot;</span> <span class="o">/&gt;</span>
+</pre></div>
+
+
+<p><img src="map_1.png" /></p>
 <h2>Plot the locations</h2>
-<div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">gmaps</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ipywidgets.embed</span> <span class="kn">import</span> <span class="n">embed_minimal_html</span>
+
+<span class="n">fig</span> <span class="o">=</span> <span class="n">gmaps</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
 <span class="n">markers</span> <span class="o">=</span> <span class="n">gmaps</span><span class="o">.</span><span class="n">marker_layer</span><span class="p">(</span><span class="n">lat_long</span><span class="p">)</span>
 <span class="n">fig</span><span class="o">.</span><span class="n">add_layer</span><span class="p">(</span><span class="n">markers</span><span class="p">)</span>
-<span class="n">fig</span>
+
+<span class="n">embed_minimal_html</span><span class="p">(</span><span class="s1">&#39;export.html&#39;</span><span class="p">,</span> <span class="n">views</span><span class="o">=</span><span class="p">[</span><span class="n">fig</span><span class="p">])</span>
 </pre></div>
 
 
-<div class="highlight"><pre><span></span>A Jupyter Widget
+<div class="highlight"><pre><span></span><span class="o">%%</span><span class="n">HTML</span>
+<span class="o">&lt;</span><span class="n">img</span> <span class="n">src</span><span class="o">=</span><span class="s2">&quot;map_2.png&quot;</span> <span class="o">/&gt;</span>
 </pre></div>
+
+
+<p><img src="map_2.png" /></p>
     </div><!-- /.entry-content -->
 
   </article>

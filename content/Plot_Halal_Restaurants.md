@@ -101,15 +101,35 @@ fig
     A Jupyter Widget
 
 
+
+```python
+%%HTML
+<img src="map_1.png" />
+```
+
+
+<img src="map_1.png" />
+
+
 ## Plot the locations
 
 
 ```python
+from ipywidgets.embed import embed_minimal_html
+
 fig = gmaps.figure()
 markers = gmaps.marker_layer(lat_long)
 fig.add_layer(markers)
-fig
+
+embed_minimal_html('export.html', views=[fig])
 ```
 
 
-    A Jupyter Widget
+```python
+%%HTML
+<img src="map_2.png" />
+```
+
+
+<img src="map_2.png" />
+
