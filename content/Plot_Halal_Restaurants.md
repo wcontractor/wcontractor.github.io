@@ -1,18 +1,19 @@
 Title:Plot Yelp Halal Restaurants 
 Date:2017-12-24 17:00
-Modified:2017-12-24 17:00
+Modified:2018-02-19 19:00
 Category:Python
 Tags:Python
 Slug:plot-halal-restaurants
 Authors:Wahid Contractor
 Summary:Plot Halal Restaurants from Yelp using Google Maps API
 
+
 # Background and Overview
 In my first 2 Python related posts I used techniques to scrape data from the web and turn that into information.  In case you missed it check out my [NFL Salary Scraping Part 1](https://wcontractor.github.io/nfl-salary.html) and [Part 2](https://wcontractor.github.io/nfl-salary-part2.html) where I show how to use requests, BeautifulSoup, Pandas, and Matplotlib to learn that the highest paid players in the NFL in 2017 are Larry Fitzgerald and Patrick Peterson.
 
 This post is an evolution from those posts, instead of using scraping data I'm using the Yelp and Google maps APIs to collect information and present the results on a map with markers.
 
-For context I used the Yelp Fusion API to peform a business search for term of 'halal'.  Now by no means am I an expert on this topic, but the word halal mean permissable to eat and my wife and my wife and I frequent these restaurants so I thought it would be interesting to map those locations near our house.
+For context I used the Yelp Fusion API to peform a business search for term of 'halal'.  Now by no means am I an expert on this topic, but the word halal mean permissable to eat and my wife and I frequent these restaurants so I thought it would be interesting to map those locations near our house.
 
 
 ```python
@@ -22,7 +23,7 @@ import pandas as pd
 ```
 
 ## Load Data
-Admittedly to get the data from the Yelp API I used Postman instead of interfacing with the API directly.  This was just faster to get a JSON file of the results I was looking for.  To do this you need to create an app and get an API Key from Yelps Developer website.  I saved the results from Postman into a text file and then worked locally from there.
+Admittedly to get the data from the Yelp API I used Postman instead of interfacing with the API directly.  This was just faster to get a JSON file of the results I was looking for.  To do this you need to create an app and get an API Key from Yelps Developer website.  I saved the results from Postman into a text file and then worked with that file from there.
 
 
 ```python
@@ -30,11 +31,12 @@ with open("Yelp_Halal_Businesses.JSON", 'r') as file:
     data = file.read()
 
 json_data = json.loads(data)
+
 ```
 
 ## Get Locations
 
-In the cell below I iterate over the items in json_Data and create 2 lists that store that latitude and longitude.  I then zip those 2 lists together to create 1 so that I can pass the coordinates of the halal restaurants to gmaps.
+In the cell below I iterate over the items in json_data and create 2 lists that store that latitude and longitude.  I then zip those 2 lists together to create 1 so that I can pass the coordinates of the halal restaurants to gmaps.
 
 
 ```python
@@ -132,4 +134,76 @@ embed_minimal_html('export.html', views=[fig])
 
 
 <img src="map_2.png" />
+
+
+## Conclusion
+
+The map visualization is great.  I really enjoy maps, but to really find that hidden treasure in the data you need to know your data and ask questions.  By asking my data set what the restaurants had greater than 4 stars, where 2 dollar signs, and had more than 50 reviews I found a restauarant I never heard of before.  My wife and I will be checking out this place soon enough!
+
+
+```python
+json_data.keys()
+df = pd.DataFrame(json_data['businesses'])
+df.columns
+```
+
+
+
+
+    Index(['categories', 'coordinates', 'display_phone', 'distance', 'id',
+           'image_url', 'is_closed', 'location', 'name', 'phone', 'price',
+           'rating', 'review_count', 'transactions', 'url'],
+          dtype='object')
+
+
+
+
+```python
+df_final = df[['name','phone','price','rating','review_count','url']]
+df_final[(df_final['rating'] > 4) & (df_final['price']== '$$') & (df_final['review_count'] > 50)]
+```
+
+
+
+
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>name</th>
+      <th>phone</th>
+      <th>price</th>
+      <th>rating</th>
+      <th>review_count</th>
+      <th>url</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>4</th>
+      <td>4 Brothers Breakfast</td>
+      <td>+19088348889</td>
+      <td>$$</td>
+      <td>4.5</td>
+      <td>183</td>
+      <td>https://www.yelp.com/biz/4-brothers-breakfast-...</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
 
