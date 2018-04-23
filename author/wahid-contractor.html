@@ -22,173 +22,148 @@
 
             <aside id="featured" class="body">
                 <article>
-                    <h1 class="entry-title"><a href="/plot-halal-restaurants.html">Plot Yelp Halal Restaurants</a></h1>
+                    <h1 class="entry-title"><a href="/gdp-charts.html">World Economic Outlook Charts</a></h1>
 <footer class="post-info">
-        <span>Sun 24 December 2017</span>
-<span>| tags: <a href="/tag/python.html">Python</a></span>
-</footer><!-- /.post-info --><h1>Background and Overview</h1>
-<p>In my first 2 Python related posts I used techniques to scrape data from the web and turn that into information.  In case you missed it check out my <a href="https://wcontractor.github.io/nfl-salary.html">NFL Salary Scraping Part 1</a> and <a href="https://wcontractor.github.io/nfl-salary-part2.html">Part 2</a> where I show how to use requests, BeautifulSoup, Pandas, and Matplotlib to learn that the highest paid players in the NFL in 2017 are Larry Fitzgerald and Patrick Peterson.</p>
-<p>This post is an evolution from those posts, instead of using scraping data I'm using the Yelp and Google maps APIs to collect information and present the results on a map with markers.</p>
-<p>For context I used the Yelp Fusion API to peform a business search for term of 'halal'.  Now by no means am I an expert on this topic, but the word halal mean permissable to eat and my wife and I frequent these restaurants so I thought it would be interesting to map those locations near our house.</p>
-<div class="highlight"><pre><span></span><span class="c1">#imports using json, gmaps, and pandas</span>
-<span class="kn">import</span> <span class="nn">json</span><span class="o">,</span> <span class="nn">gmaps</span>
+        <span>Mon 23 April 2018</span>
+<span>| tags: <a href="/tag/python.html">Python</a><a href="/tag/matplotlip.html">Matplotlip</a><a href="/tag/pandas.html">Pandas</a></span>
+</footer><!-- /.post-info --><h2>Background</h2>
+<p>It has been some time since my last post.  Life has taken over, with an infant at home and a hectic work schedule it has been difficult to keep up with hobbies. The goal of this post is really to work through a problem and produce some simple vizualization.  I don't want too much dust to pile up.  </p>
+<div class="highlight"><pre><span></span><span class="c1">#imports</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">urllib.request</span>
+<span class="o">%</span><span class="n">matplotlib</span> <span class="n">inline</span>
 </pre></div>
 
 
-<h2>Load Data</h2>
-<p>Admittedly to get the data from the Yelp API I used Postman instead of interfacing with the API directly.  This was just faster to get a JSON file of the results I was looking for.  To do this you need to create an app and get an API Key from Yelps Developer website.  I saved the results from Postman into a text file and then worked with that file from there.</p>
-<div class="highlight"><pre><span></span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;Yelp_Halal_Businesses.JSON&quot;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="nb">file</span><span class="p">:</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="nb">file</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+<h2>Get Data</h2>
+<p>For this project I used data set provided by the World Economic Outlook (WEO) database maintained by the International Monetary Foundation (IMF).  They have a readily available, cleaned dataset that represents a complete economic outlook for all the countries of the world.  This data set contains interesting features such as GDP, Population, This was last updated in October 2017. </p>
+<div class="highlight"><pre><span></span><span class="c1">#Build a function to get the data from the IMF website and save it locally</span>
 
-<span class="n">json_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="n">URL</span> <span class="o">=</span> <span class="s1">&#39;http://www.imf.org/external/pubs/ft/weo/2017/02/weodata/WEOOct2017all.xls&#39;</span>
+<span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="n">URL</span><span class="p">):</span>
+    <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlretrieve</span><span class="p">(</span><span class="n">URL</span><span class="p">,</span> <span class="s1">&#39;/Users/wcontractor/Dev/Python/wcontractor.github.io.git/notebooks/WEOOct2017all.xls&#39;</span><span class="p">)</span>
 </pre></div>
 
 
-<h2>Get Locations</h2>
-<p>In the cell below I iterate over the items in json_data and create 2 lists that store that latitude and longitude.  I then zip those 2 lists together to create 1 so that I can pass the coordinates of the halal restaurants to gmaps.</p>
-<div class="highlight"><pre><span></span><span class="n">lat</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="nb">long</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">json_data</span><span class="p">[</span><span class="s1">&#39;businesses&#39;</span><span class="p">]:</span>
-    <span class="n">lat</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s1">&#39;coordinates&#39;</span><span class="p">][</span><span class="s1">&#39;latitude&#39;</span><span class="p">])</span>
-    <span class="nb">long</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s1">&#39;coordinates&#39;</span><span class="p">][</span><span class="s1">&#39;longitude&#39;</span><span class="p">])</span>
-
-<span class="n">lat_long</span> <span class="o">=</span> <span class="nb">list</span><span class="p">((</span><span class="nb">zip</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span><span class="nb">long</span><span class="p">)))</span>
-<span class="n">lat_long</span>
+<div class="highlight"><pre><span></span><span class="c1">#Run the above function to get the data</span>
+<span class="c1">#Don&#39;t forget to change the path to save this some place local to your computer!!!!!</span>
+<span class="n">get_data</span><span class="p">(</span><span class="n">URL</span><span class="p">)</span>
 </pre></div>
 
 
-<div class="highlight"><pre><span></span>[(40.56378, -74.694418),
- (40.5661650002003, -74.6275533735752),
- (40.55492, -74.52609),
- (40.5036928033583, -74.6444269892345),
- (40.62008, -74.49021),
- (40.55527, -74.52661),
- (40.598919, -74.480728),
- (40.437622, -74.538564),
- (40.6171176417404, -74.494637063977),
- (40.61933, -74.4927699),
- (40.4340821413289, -74.5478186003373),
- (40.62008, -74.49021),
- (40.4473744, -74.4966087),
- (40.4974297303228, -74.4482234326057),
- (40.4379627796526, -74.5361950967858),
- (40.5104061, -74.409281),
- (40.4345526013837, -74.5460039343956),
- (40.4977595713994, -74.4490539963252),
- (40.5721031, -74.3360702),
- (40.4992091, -74.4272637)]
+<div class="highlight"><pre><span></span><span class="c1">#Read the data into a Pandas dataframe</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="s1">&#39;WEOOct2017all.xlsx&#39;</span><span class="p">,</span> <span class="n">parse_cols</span><span class="o">=</span><span class="s1">&#39;C:E,G,AN:AX&#39;</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">dtypes</span>
 </pre></div>
 
 
-<h2>Test the Google Maps API</h2>
-<p>The code snippet below is a copy/paste from the gmaps documentation.  I did this to make sure I had the Google API Key setup correctly.  </p>
-<p>The information in gmaps documenation is really quite good.  Check it out <a href="https://media.readthedocs.org/pdf/jupyter-gmaps/latest/jupyter-gmaps.pdf">jupyter-gmaps.pdf</a> </p>
-<div class="highlight"><pre><span></span><span class="n">gmaps</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;AI...&quot;</span><span class="p">)</span>
-<span class="n">marker_locations</span> <span class="o">=</span> <span class="p">[</span>
-<span class="p">(</span><span class="o">-</span><span class="mf">34.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">59.166672</span><span class="p">),</span>
-<span class="p">(</span><span class="o">-</span><span class="mf">32.23333</span><span class="p">,</span> <span class="o">-</span><span class="mf">64.433327</span><span class="p">),</span>
-<span class="p">(</span><span class="mf">40.166672</span><span class="p">,</span> <span class="mf">44.133331</span><span class="p">),</span>
-<span class="p">(</span><span class="mf">51.216671</span><span class="p">,</span> <span class="mf">5.0833302</span><span class="p">),</span>
-<span class="p">(</span><span class="mf">51.333328</span><span class="p">,</span> <span class="mf">4.25</span><span class="p">)</span>
-<span class="p">]</span>
-<span class="n">fig</span> <span class="o">=</span> <span class="n">gmaps</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
-<span class="n">markers</span> <span class="o">=</span> <span class="n">gmaps</span><span class="o">.</span><span class="n">marker_layer</span><span class="p">(</span><span class="n">marker_locations</span><span class="p">)</span>
-<span class="n">fig</span><span class="o">.</span><span class="n">add_layer</span><span class="p">(</span><span class="n">markers</span><span class="p">)</span>
-<span class="n">fig</span>
+<div class="highlight"><pre><span></span>WEO Subject Code      object
+Country               object
+Subject Descriptor    object
+Units                 object
+2010                  object
+2011                  object
+2012                  object
+2013                  object
+2014                  object
+2015                  object
+2016                  object
+2017                  object
+2018                  object
+2019                  object
+2020                  object
+dtype: object
 </pre></div>
 
 
-<div class="highlight"><pre><span></span>A Jupyter Widget
+<h2>Clean The Data</h2>
+<p>I noticed all the years of data, which should be number were showing up as objects so I needed to convert them to numeric.  I chose to use the apply method to achieve this.  </p>
+<div class="highlight"><pre><span></span><span class="n">df_cleaned</span> <span class="o">=</span> <span class="n">df_years</span><span class="p">[[</span><span class="mi">2010</span><span class="p">,</span> <span class="mi">2011</span><span class="p">,</span> <span class="mi">2012</span><span class="p">,</span> <span class="mi">2013</span><span class="p">,</span> <span class="mi">2014</span><span class="p">,</span> <span class="mi">2015</span><span class="p">,</span> <span class="mi">2016</span><span class="p">,</span> <span class="mi">2017</span><span class="p">,</span> <span class="mi">2018</span><span class="p">,</span> <span class="mi">2019</span><span class="p">,</span> <span class="mi">2020</span><span class="p">]]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">to_numeric</span><span class="p">,</span><span class="n">errors</span><span class="o">=</span><span class="s1">&#39;coerce&#39;</span><span class="p">)</span>
 </pre></div>
 
 
-<div class="highlight"><pre><span></span><span class="o">%%</span><span class="n">HTML</span>
-<span class="o">&lt;</span><span class="n">img</span> <span class="n">src</span><span class="o">=</span><span class="s2">&quot;map_1.png&quot;</span> <span class="o">/&gt;</span>
+<div class="highlight"><pre><span></span><span class="c1">#Check to make sure the to_numeric method really worked</span>
+<span class="n">df_cleaned</span><span class="p">[</span><span class="mi">2015</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
 </pre></div>
 
 
-<p><img src="map_1.png" /></p>
-<h2>Plot the locations</h2>
-<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ipywidgets.embed</span> <span class="kn">import</span> <span class="n">embed_minimal_html</span>
-
-<span class="n">fig</span> <span class="o">=</span> <span class="n">gmaps</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
-<span class="n">markers</span> <span class="o">=</span> <span class="n">gmaps</span><span class="o">.</span><span class="n">marker_layer</span><span class="p">(</span><span class="n">lat_long</span><span class="p">)</span>
-<span class="n">fig</span><span class="o">.</span><span class="n">add_layer</span><span class="p">(</span><span class="n">markers</span><span class="p">)</span>
-
-<span class="n">embed_minimal_html</span><span class="p">(</span><span class="s1">&#39;export.html&#39;</span><span class="p">,</span> <span class="n">views</span><span class="o">=</span><span class="p">[</span><span class="n">fig</span><span class="p">])</span>
+<div class="highlight"><pre><span></span>58008139678241.18
 </pre></div>
 
 
-<div class="highlight"><pre><span></span><span class="o">%%</span><span class="n">HTML</span>
-<span class="o">&lt;</span><span class="n">img</span> <span class="n">src</span><span class="o">=</span><span class="s2">&quot;map_2.png&quot;</span> <span class="o">/&gt;</span>
+<div class="highlight"><pre><span></span><span class="n">df_labels</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="s1">&#39;WEO Subject Code&#39;</span><span class="p">,</span> <span class="s1">&#39;Country&#39;</span><span class="p">]]</span>
 </pre></div>
 
 
-<p><img src="map_2.png" /></p>
-<h2>Conclusion</h2>
-<p>The map visualization is great.  I really enjoy maps, but to really find that hidden treasure in the data you need to know your data and ask questions.  By asking my data set what the restaurants had greater than 4 stars, where 2 dollar signs, and had more than 50 reviews I found a restauarant I never heard of before.  My wife and I will be checking out this place soon enough!</p>
-<div class="highlight"><pre><span></span><span class="n">json_data</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
-<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">json_data</span><span class="p">[</span><span class="s1">&#39;businesses&#39;</span><span class="p">])</span>
-<span class="n">df</span><span class="o">.</span><span class="n">columns</span>
+<div class="highlight"><pre><span></span><span class="n">df_final</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">df_labels</span><span class="p">,</span> <span class="n">df_cleaned</span><span class="p">],</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">join_axes</span><span class="o">=</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">])</span>
 </pre></div>
 
 
-<div class="highlight"><pre><span></span>Index([&#39;categories&#39;, &#39;coordinates&#39;, &#39;display_phone&#39;, &#39;distance&#39;, &#39;id&#39;,
-       &#39;image_url&#39;, &#39;is_closed&#39;, &#39;location&#39;, &#39;name&#39;, &#39;phone&#39;, &#39;price&#39;,
-       &#39;rating&#39;, &#39;review_count&#39;, &#39;transactions&#39;, &#39;url&#39;],
-      dtype=&#39;object&#39;)
+<div class="highlight"><pre><span></span><span class="c1"># Get current size</span>
+<span class="n">fig_size</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s2">&quot;figure.figsize&quot;</span><span class="p">]</span>
+
+<span class="c1"># Prints: [8.0, 6.0]</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Current size:&quot;</span><span class="p">,</span> <span class="n">fig_size</span><span class="p">)</span>
 </pre></div>
 
 
-<div class="highlight"><pre><span></span><span class="n">df_final</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span><span class="s1">&#39;phone&#39;</span><span class="p">,</span><span class="s1">&#39;price&#39;</span><span class="p">,</span><span class="s1">&#39;rating&#39;</span><span class="p">,</span><span class="s1">&#39;review_count&#39;</span><span class="p">,</span><span class="s1">&#39;url&#39;</span><span class="p">]]</span>
-<span class="n">df_final</span><span class="p">[(</span><span class="n">df_final</span><span class="p">[</span><span class="s1">&#39;rating&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">4</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">df_final</span><span class="p">[</span><span class="s1">&#39;price&#39;</span><span class="p">]</span><span class="o">==</span> <span class="s1">&#39;$$&#39;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">df_final</span><span class="p">[</span><span class="s1">&#39;review_count&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">50</span><span class="p">)]</span>
+<div class="highlight"><pre><span></span>Current size: [6.0, 4.0]
 </pre></div>
 
 
-<div>
-<style>
-    .dataframe thead tr:only-child th {
-        text-align: right;
-    }
+<div class="highlight"><pre><span></span><span class="c1"># Set figure width to 12 and height to 9</span>
+<span class="n">fig_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">12</span>
+<span class="n">fig_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">9</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s2">&quot;figure.figsize&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fig_size</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">();</span>
+</pre></div>
 
-    .dataframe thead th {
-        text-align: left;
-    }
 
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>name</th>
-      <th>phone</th>
-      <th>price</th>
-      <th>rating</th>
-      <th>review_count</th>
-      <th>url</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>4</th>
-      <td>4 Brothers Breakfast</td>
-      <td>+19088348889</td>
-      <td>$$</td>
-      <td>4.5</td>
-      <td>183</td>
-      <td>https://www.yelp.com/biz/4-brothers-breakfast-...</td>
-    </tr>
-  </tbody>
-</table>
-</div>                </article>
+<div class="highlight"><pre><span></span><span class="n">df_final</span><span class="p">[</span><span class="n">df_final</span><span class="p">[</span><span class="s1">&#39;WEO Subject Code&#39;</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;NGDPD&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="mi">2010</span><span class="p">,</span><span class="n">ascending</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s2">&quot;barh&quot;</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>&lt;matplotlib.axes._subplots.AxesSubplot at 0x10cefe048&gt;
+</pre></div>
+
+
+<p><img alt="png" src="output_13_1.png"></p>
+<div class="highlight"><pre><span></span><span class="n">years</span> <span class="o">=</span> <span class="p">[</span><span class="mi">2010</span><span class="p">,</span> <span class="mi">2011</span><span class="p">,</span> <span class="mi">2012</span><span class="p">,</span> <span class="mi">2013</span><span class="p">,</span> <span class="mi">2014</span><span class="p">,</span> <span class="mi">2015</span><span class="p">,</span> <span class="mi">2016</span><span class="p">,</span> <span class="mi">2017</span><span class="p">,</span> <span class="mi">2018</span><span class="p">,</span> <span class="mi">2019</span><span class="p">,</span> <span class="mi">2020</span><span class="p">]</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">years</span><span class="p">,</span> <span class="n">df_final</span><span class="p">[</span><span class="n">years</span><span class="p">][</span><span class="mi">1</span><span class="p">:</span><span class="mi">12</span><span class="p">]);</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">();</span>
+</pre></div>
+
+
+<p><img alt="png" src="output_14_0.png"></p>
+<div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">df_final</span><span class="p">[</span><span class="mi">2010</span><span class="p">][</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(),</span> <span class="n">df_final</span><span class="p">[</span><span class="mi">2011</span><span class="p">][</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>&lt;matplotlib.collections.PathCollection at 0x1176ed278&gt;
+</pre></div>
+
+
+<p><img alt="png" src="output_15_1.png"></p>                </article>
             </aside><!-- /#featured -->
                 <section id="content" class="body">
                     <h1>Other articles</h1>
                     <ol id="posts-list" class="hfeed">
+
+            <li><article class="hentry">
+                <header>
+                    <h1><a href="/plot-halal-restaurants.html" rel="bookmark"
+                           title="Permalink to Plot Yelp Halal Restaurants">Plot Yelp Halal Restaurants</a></h1>
+                </header>
+
+                <div class="entry-content">
+<footer class="post-info">
+        <span>Sun 24 December 2017</span>
+<span>| tags: <a href="/tag/python.html">Python</a></span>
+</footer><!-- /.post-info -->                <p>Plot Halal Restaurants from Yelp using Google Maps API</p>
+                <a class="readmore" href="/plot-halal-restaurants.html">read more</a>
+                </div><!-- /.entry-content -->
+            </article></li>
 
             <li><article class="hentry">
                 <header>
