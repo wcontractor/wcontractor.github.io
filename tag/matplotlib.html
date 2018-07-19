@@ -15,6 +15,7 @@
                 <h1><a href="/">Wcontractor.github.io </a></h1>
                 <nav><ul>
                     <li><a href="/category/python.html">Python</a></li>
+                    <li><a href="/category/python-misc.html">Python, misc</a></li>
                     <li><a href="/category/python-pelican-misc.html">Python, Pelican, misc</a></li>
                 </ul>
                 </nav>
@@ -22,181 +23,331 @@
 
             <aside id="featured" class="body">
                 <article>
-                    <h1 class="entry-title"><a href="/nfl-salary-part2.html">NFL Salary Scraping - Part 2</a></h1>
+                    <h1 class="entry-title"><a href="/sentiment-analysis.html">World Cup Tweet Sentiment Analysis</a></h1>
 <footer class="post-info">
-        <span>Sun 26 November 2017</span>
-<span>| tags: <a href="/tag/python.html">Python</a><a href="/tag/pandas.html">Pandas</a><a href="/tag/web-scraping.html">Web Scraping</a><a href="/tag/matplotlib.html">Matplotlib</a></span>
-</footer><!-- /.post-info --><h2>Background and problem statement</h2>
-<p>This is the second post in a multi-part post.  If you missed the first post, you can get it <a href="https://wcontractor.github.io/nfl-salary.html">here</a>.  In part 2 of this post I'm am looking to collect all the NFL Salary cap data from the 32 teams spread over individual webpages from www.spoctrac.com and merge that into 1 large data set.  This final data set can then be used to answer questions such as:
-- Who are the highest paid players in the NFL?
-- Which positions are the highest paid?
-- For those players that are highest paid where do they rank statistically?
-- For those teams that have the highest paid positions where do they rank statistically?  Football is after all a team sport :football:
-- And to be push the limits is there a correlation between the number of times a player is mentioned on twitter and their salary?</p>
-<h2>Imports and Function definitions</h2>
-<p>Throughout this post I'm using the BeautifulSoup library to parse the webpage and the urllib library to get pages.  I have also defined 2 functions to support this.
-- get_page is used to build a list of 32 URLS, 1 for each of the teams that will be used iterated over and parsed using the next function.<br>
-- get_team_table accepts a url, opens that as a page, and then uses BeautufilSoup to parse it and return a soup object.  </p>
-<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">urllib.request</span> <span class="kn">import</span> <span class="n">urlopen</span>
-<span class="kn">from</span> <span class="nn">bs4</span> <span class="kn">import</span> <span class="n">BeautifulSoup</span>
-<span class="n">base_url</span> <span class="o">=</span> <span class="s2">&quot;http://www.spotrac.com/nfl/&quot;</span>
-
-<span class="k">def</span> <span class="nf">get_page</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
-    <span class="n">page</span> <span class="o">=</span> <span class="n">urlopen</span><span class="p">(</span><span class="n">base_url</span><span class="p">)</span>
-    <span class="n">soup</span> <span class="o">=</span> <span class="n">BeautifulSoup</span><span class="p">(</span><span class="n">page</span><span class="p">,</span> <span class="s1">&#39;lxml&#39;</span><span class="p">)</span>
-    <span class="nb">file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;spotrac_urls.txt&quot;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
-    <span class="nb">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">soup</span><span class="p">))</span>
-    <span class="nb">file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-
-<span class="k">def</span> <span class="nf">get_team_table</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
-    <span class="n">page</span> <span class="o">=</span> <span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
-    <span class="n">soup</span> <span class="o">=</span> <span class="n">BeautifulSoup</span><span class="p">(</span><span class="n">page</span><span class="p">,</span> <span class="s1">&#39;lxml&#39;</span><span class="p">)</span>
+        <span>Wed 18 July 2018</span>
+<span>| tags: <a href="/tag/python.html">Python</a><a href="/tag/pandas.html">Pandas</a><a href="/tag/matplotlib.html">Matplotlib</a><a href="/tag/nlp.html">NLP</a></span>
+</footer><!-- /.post-info --><h2>Background</h2>
+<p>Normally I open these posts with some background about what I'm trying to accomplish, some perspective about my thought process as I worked through the problem, and just a little bit about the why.  I have been away for some time though, It was my intention to work through a mini-project at least once a month and turn that into a post. It has been some time since my last post. Life has taken over, my wife and I have a 6 month old baby girl and she keeps us very busy. However, my passion for learning, building, and creating </p>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">json</span><span class="o">,</span> <span class="nn">pprint</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
 </pre></div>
 
 
-<h2>Get all the BASE URLS</h2>
-<p>The http://www.spotrac.com/nfl/ has links for each of the 32 NFL teams.  On those pages there is a datatable that has that teams Salary cap data.  To get those links so that they can be used later used the get_page function and write the contents to a file.</p>
-<div class="highlight"><pre><span></span><span class="n">get_page</span><span class="p">(</span><span class="n">base_url</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">nltk.corpus</span> <span class="kn">import</span> <span class="n">stopwords</span>
+<span class="kn">from</span> <span class="nn">nltk</span> <span class="kn">import</span> <span class="n">sent_tokenize</span>
+
+<span class="n">pd</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">display</span><span class="o">.</span><span class="n">max_rows</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s1">&#39;display.max_colwidth&#39;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 
 
-<div class="highlight"><pre><span></span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;spotrac_urls.txt&quot;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="nb">file</span><span class="p">:</span>
-    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">file</span><span class="p">:</span>
-        <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+<div class="highlight"><pre><span></span><span class="n">tweet_data</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">tweet_file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;world_cup_tweets.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">tweet_file</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">tweet</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+        <span class="n">tweet_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tweet</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">continue</span>
+
+<span class="nb">len</span><span class="p">(</span><span class="n">tweet_data</span><span class="p">)</span>
 </pre></div>
 
+
+<div class="highlight"><pre><span></span>376
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">tweet_data</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;There are&#39;</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39; rows and&#39;</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39; columns in this dataset&#39;</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">columns</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>There are 376  rows and 37  columns in this dataset
+
+
+
+
+
+Index([&#39;contributors&#39;, &#39;coordinates&#39;, &#39;created_at&#39;, &#39;display_text_range&#39;,
+       &#39;entities&#39;, &#39;extended_entities&#39;, &#39;extended_tweet&#39;, &#39;favorite_count&#39;,
+       &#39;favorited&#39;, &#39;filter_level&#39;, &#39;geo&#39;, &#39;id&#39;, &#39;id_str&#39;,
+       &#39;in_reply_to_screen_name&#39;, &#39;in_reply_to_status_id&#39;,
+       &#39;in_reply_to_status_id_str&#39;, &#39;in_reply_to_user_id&#39;,
+       &#39;in_reply_to_user_id_str&#39;, &#39;is_quote_status&#39;, &#39;lang&#39;, &#39;limit&#39;, &#39;place&#39;,
+       &#39;possibly_sensitive&#39;, &#39;quote_count&#39;, &#39;quoted_status&#39;,
+       &#39;quoted_status_id&#39;, &#39;quoted_status_id_str&#39;, &#39;quoted_status_permalink&#39;,
+       &#39;reply_count&#39;, &#39;retweet_count&#39;, &#39;retweeted&#39;, &#39;retweeted_status&#39;,
+       &#39;source&#39;, &#39;text&#39;, &#39;timestamp_ms&#39;, &#39;truncated&#39;, &#39;user&#39;],
+      dtype=&#39;object&#39;)
+</pre></div>
+
+
+<h2>Drop unnecessary columns</h2>
+<p>There are a siginifance number of attributes on this data set that will not be used.  This step removes the unnessary columns.  </p>
+<div class="highlight"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s1">&#39;contributors&#39;</span><span class="p">,</span> <span class="s1">&#39;coordinates&#39;</span><span class="p">,</span> <span class="s1">&#39;extended_tweet&#39;</span><span class="p">,</span> <span class="s1">&#39;geo&#39;</span><span class="p">,</span> <span class="s1">&#39;created_at&#39;</span><span class="p">,</span> <span class="s1">&#39;display_text_range&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;entities&#39;</span><span class="p">,</span> <span class="s1">&#39;extended_entities&#39;</span><span class="p">,</span> <span class="s1">&#39;favorite_count&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;favorited&#39;</span><span class="p">,</span> <span class="s1">&#39;filter_level&#39;</span><span class="p">,</span> <span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;id_str&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;in_reply_to_screen_name&#39;</span><span class="p">,</span> <span class="s1">&#39;in_reply_to_status_id&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;in_reply_to_status_id_str&#39;</span><span class="p">,</span> <span class="s1">&#39;in_reply_to_user_id&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;in_reply_to_user_id_str&#39;</span><span class="p">,</span> <span class="s1">&#39;is_quote_status&#39;</span><span class="p">,</span> <span class="s1">&#39;limit&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;possibly_sensitive&#39;</span><span class="p">,</span> <span class="s1">&#39;quote_count&#39;</span><span class="p">,</span> <span class="s1">&#39;quoted_status&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;quoted_status_id&#39;</span><span class="p">,</span> <span class="s1">&#39;quoted_status_id_str&#39;</span><span class="p">,</span> <span class="s1">&#39;quoted_status_permalink&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;reply_count&#39;</span><span class="p">,</span> <span class="s1">&#39;retweet_count&#39;</span><span class="p">,</span> <span class="s1">&#39;retweeted&#39;</span><span class="p">,</span> <span class="s1">&#39;retweeted_status&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;source&#39;</span><span class="p">,</span><span class="s1">&#39;timestamp_ms&#39;</span><span class="p">,</span> <span class="s1">&#39;truncated&#39;</span><span class="p">,</span> <span class="s1">&#39;user&#39;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">shape</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>(376, 3)
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">dtypes</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>lang     object
+place    object
+text     object
+dtype: object
+</pre></div>
+
+
+<h1>Fill in NAN's</h1>
+<p>There are rows where the text value is NAN and that is causing the pre-processing steps to error with a data type error.  Perhaps I could have filtered them out, but I chose to use fillna to fill them in with spaces.  </p>
+<div class="highlight"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">dtype</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>dtype(&#39;O&#39;)
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="c1">#df[&#39;cleaned&#39;] = df[&#39;text&#39;].str.replace(&#39;[^\w\s]&#39;, &#39;&#39;)</span>
+<span class="c1">#from nltk.corpus import stopwords</span>
+<span class="c1">#stop = stopwords.words(&#39;english&#39;)</span>
+<span class="c1">#df[&#39;text&#39;] = df[&#39;text&#39;].apply(lambda x: &quot; &quot;.join(x for x in x.split() if x not in stop))</span>
+<span class="c1">#df[&#39;text&#39;].head()</span>
+
+<span class="n">df</span><span class="p">[</span><span class="s1">&#39;word_count&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;text&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)))</span>
+<span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+</pre></div>
+
+
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>lang</th>
+      <th>place</th>
+      <th>text</th>
+      <th>word_count</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>en</td>
+      <td>None</td>
+      <td>This. https://t.co/UNKep8L5EY</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>en</td>
+      <td>None</td>
+      <td>Wanna see England in the final but Croatia is clearly the better side\n\n#ENGCRO #WorldCup</td>
+      <td>14</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>en</td>
+      <td>None</td>
+      <td>C’mon #England we really can do this. Dig deep. #EnglandvsCroatia #ThreeLionsOnAShirt</td>
+      <td>11</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>en</td>
+      <td>None</td>
+      <td>RT @FlickSaudi: If England lose This is How The Streets Of London Will Look https://t.co/V8AT2RRn5p</td>
+      <td>15</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>en</td>
+      <td>None</td>
+      <td>RT @hermannkelly: .@TonightShowTV3 I’m into the breach on the TV3 Tonight Show, Wednesday 11th July at 11pm. #WorldCup⁠ ⁠⁠ ⁠ \nAs we already…</td>
+      <td>23</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>th</td>
+      <td>None</td>
+      <td>RT @mthai: เกมส์ยัง​ไม่จบ... ต่อเวลาพิเศษ​ 30  นาที\n\nโครเอเชีย​ 🇭🇷       1  :   1         🏴󠁧󠁢󠁥󠁮󠁧󠁿​ อังกฤษ​\n เปริซิช  68'              ⚽…</td>
+      <td>47</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>en</td>
+      <td>None</td>
+      <td>William made an England flag at nursery today. I hope he gets the need for it on Sunday. #ENGvCRO… https://t.co/Cjf76wWtPG</td>
+      <td>20</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>en</td>
+      <td>None</td>
+      <td>This is why england can never win d world cup again argue with ur ancestors #ENGCRO</td>
+      <td>16</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>en</td>
+      <td>None</td>
+      <td>RT @PurelyFootball: Hyde Park when Kieran Trippier scored for England🏴󠁧󠁢󠁥󠁮󠁧󠁿\n\nAbsolute scenes!🍻 https://t.co/SLb6dFcG0g</td>
+      <td>12</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>en</td>
+      <td>None</td>
+      <td>Honestly? I’m ashamed about the protests in England... I’m ashamed we aren’t as organized and doing as much protest… https://t.co/JBLcWtfgsX</td>
+      <td>20</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h2>Punctuation removal</h2>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">string</span>
+<span class="n">df</span><span class="p">[</span><span class="s1">&#39;no_punctuation&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;text&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;[^\w\s]&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>lang</th>
+      <th>place</th>
+      <th>text</th>
+      <th>word_count</th>
+      <th>no_punctuation</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>en</td>
+      <td>None</td>
+      <td>This. https://t.co/UNKep8L5EY</td>
+      <td>2</td>
+      <td>This httpstcoUNKep8L5EY</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>en</td>
+      <td>None</td>
+      <td>Wanna see England in the final but Croatia is clearly the better side\n\n#ENGCRO #WorldCup</td>
+      <td>14</td>
+      <td>Wanna see England in the final but Croatia is clearly the better side\n\nENGCRO WorldCup</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>en</td>
+      <td>None</td>
+      <td>C’mon #England we really can do this. Dig deep. #EnglandvsCroatia #ThreeLionsOnAShirt</td>
+      <td>11</td>
+      <td>Cmon England we really can do this Dig deep EnglandvsCroatia ThreeLionsOnAShirt</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>en</td>
+      <td>None</td>
+      <td>RT @FlickSaudi: If England lose This is How The Streets Of London Will Look https://t.co/V8AT2RRn5p</td>
+      <td>15</td>
+      <td>RT FlickSaudi If England lose This is How The Streets Of London Will Look httpstcoV8AT2RRn5p</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>en</td>
+      <td>None</td>
+      <td>RT @hermannkelly: .@TonightShowTV3 I’m into the breach on the TV3 Tonight Show, Wednesday 11th July at 11pm. #WorldCup⁠ ⁠⁠ ⁠ \nAs we already…</td>
+      <td>23</td>
+      <td>RT hermannkelly TonightShowTV3 Im into the breach on the TV3 Tonight Show Wednesday 11th July at 11pm WorldCup   \nAs we already</td>
+    </tr>
+  </tbody>
+</table>
+</div>
 
 <div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bs4</span> <span class="kn">import</span> <span class="n">BeautifulSoup</span>
-<span class="n">page</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;spotrac_urls.txt&quot;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
-<span class="n">soup</span> <span class="o">=</span> <span class="n">BeautifulSoup</span><span class="p">(</span><span class="n">page</span><span class="p">,</span> <span class="s2">&quot;lxml&quot;</span><span class="p">)</span>
-<span class="n">div</span> <span class="o">=</span> <span class="n">soup</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;div&quot;</span><span class="p">,</span><span class="s2">&quot;subnav-posts&quot;</span><span class="p">)</span>
-</pre></div>
-
-
-<div class="highlight"><pre><span></span><span class="c1"># This is a terribly simple regex to loop through all the div tags and find all the anchor tags.</span>
-<span class="c1"># Then I just get the href and print them out.</span>
 <span class="kn">import</span> <span class="nn">re</span>
-<span class="n">links</span> <span class="o">=</span> <span class="n">div</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">link</span> <span class="ow">in</span> <span class="n">links</span><span class="p">:</span>
-    <span class="k">print</span><span class="p">(</span><span class="n">link</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;href&#39;</span><span class="p">))</span>
-
-<span class="nb">len</span><span class="p">(</span><span class="n">links</span><span class="p">)</span>
-</pre></div>
-
-
-<div class="highlight"><pre><span></span>http://www.spotrac.com/nfl/arizona-cardinals/cap/
-http://www.spotrac.com/nfl/atlanta-falcons/cap/
-http://www.spotrac.com/nfl/baltimore-ravens/cap/
-http://www.spotrac.com/nfl/buffalo-bills/cap/
-http://www.spotrac.com/nfl/carolina-panthers/cap/
-http://www.spotrac.com/nfl/chicago-bears/cap/
-http://www.spotrac.com/nfl/cincinnati-bengals/cap/
-http://www.spotrac.com/nfl/cleveland-browns/cap/
-http://www.spotrac.com/nfl/dallas-cowboys/cap/
-http://www.spotrac.com/nfl/denver-broncos/cap/
-http://www.spotrac.com/nfl/detroit-lions/cap/
-http://www.spotrac.com/nfl/green-bay-packers/cap/
-http://www.spotrac.com/nfl/houston-texans/cap/
-http://www.spotrac.com/nfl/indianapolis-colts/cap/
-http://www.spotrac.com/nfl/jacksonville-jaguars/cap/
-http://www.spotrac.com/nfl/kansas-city-chiefs/cap/
-http://www.spotrac.com/nfl/los-angeles-chargers/cap/
-http://www.spotrac.com/nfl/los-angeles-rams/cap/
-http://www.spotrac.com/nfl/miami-dolphins/cap/
-http://www.spotrac.com/nfl/minnesota-vikings/cap/
-http://www.spotrac.com/nfl/new-england-patriots/cap/
-http://www.spotrac.com/nfl/new-orleans-saints/cap/
-http://www.spotrac.com/nfl/new-york-giants/cap/
-http://www.spotrac.com/nfl/new-york-jets/cap/
-http://www.spotrac.com/nfl/oakland-raiders/cap/
-http://www.spotrac.com/nfl/philadelphia-eagles/cap/
-http://www.spotrac.com/nfl/pittsburgh-steelers/cap/
-http://www.spotrac.com/nfl/san-francisco-49ers/cap/
-http://www.spotrac.com/nfl/seattle-seahawks/cap/
-http://www.spotrac.com/nfl/tampa-bay-buccaneers/cap/
-http://www.spotrac.com/nfl/tennessee-titans/cap/
-http://www.spotrac.com/nfl/washington-redskins/cap/
+<span class="kn">from</span> <span class="nn">nltk.tokenize</span> <span class="kn">import</span> <span class="n">WordPunctTokenizer</span>
+<span class="n">tok</span> <span class="o">=</span> <span class="n">WordPunctTokenizer</span><span class="p">()</span>
+<span class="n">pat1</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;@[A-Za-z0-9]+&#39;</span>
+<span class="n">pat2</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;https?://[A-Za-z0-9./]+&#39;</span>
+<span class="n">combined_pat</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;|&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">((</span><span class="n">pat1</span><span class="p">,</span> <span class="n">pat2</span><span class="p">))</span>
 
 
 
+<span class="k">def</span> <span class="nf">tweet_cleaner</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+    <span class="n">soup</span> <span class="o">=</span> <span class="n">BeautifulSoup</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="s1">&#39;lxml&#39;</span><span class="p">)</span>
+    <span class="n">souped</span> <span class="o">=</span> <span class="n">soup</span><span class="o">.</span><span class="n">get_text</span><span class="p">()</span>
+    <span class="n">stripped</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">combined_pat</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">souped</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">clean</span> <span class="o">=</span> <span class="n">stripped</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8-sig&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">u</span><span class="s2">&quot;</span><span class="se">\ufffd</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;?&quot;</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">clean</span> <span class="o">=</span> <span class="n">stripped</span>
+        <span class="n">letters_only</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s2">&quot;[^a-zA-Z]&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="n">clean</span><span class="p">)</span>
+        <span class="n">lower_case</span> <span class="o">=</span> <span class="n">letters_only</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="c1"># During the letters_only process two lines above, it has created unnecessay white spaces,</span>
+    <span class="c1"># I will tokenize and join together to remove unneccessary white spaces</span>
+        <span class="n">words</span> <span class="o">=</span> <span class="n">tok</span><span class="o">.</span><span class="n">tokenize</span><span class="p">(</span><span class="n">lower_case</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">words</span><span class="p">))</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
 
 
-32
-</pre></div>
+<span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
 
+<span class="k">for</span> <span class="n">tweet</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">text</span><span class="p">:</span>
+    <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tweet_cleaner</span><span class="p">(</span><span class="n">tweet</span><span class="p">))</span>
 
-<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">urllib.request</span> <span class="kn">import</span> <span class="n">urlopen</span>
-<span class="k">def</span> <span class="nf">get_team_table</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
-    <span class="n">page</span> <span class="o">=</span> <span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
-    <span class="n">soup</span> <span class="o">=</span> <span class="n">BeautifulSoup</span><span class="p">(</span><span class="n">page</span><span class="p">,</span> <span class="s1">&#39;lxml&#39;</span><span class="p">)</span>
-    <span class="n">data_rows</span> <span class="o">=</span> <span class="p">[</span><span class="n">row</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">soup</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;table&quot;</span><span class="p">,</span> <span class="s2">&quot;datatable&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="s2">&quot;tr&quot;</span><span class="p">)]</span>
-    <span class="k">return</span> <span class="n">data_rows</span>
-</pre></div>
+<span class="n">df</span><span class="p">[</span><span class="s1">&#39;cleaned&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
 
-
-<h2>Get the data</h2>
-<p>For all 32 teams we get the table rows using the get_team_table functions</p>
-<div class="highlight"><pre><span></span><span class="c1"># create an empty list</span>
-<span class="n">team_data</span> <span class="o">=</span> <span class="p">[]</span>
-
-<span class="k">for</span> <span class="n">link</span> <span class="ow">in</span> <span class="n">links</span><span class="p">:</span>
-    <span class="n">team_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">get_team_table</span><span class="p">(</span><span class="n">link</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;href&#39;</span><span class="p">)))</span>
-</pre></div>
-
-
-<div class="highlight"><pre><span></span><span class="c1">#Make sure there are 32 elements in team_data</span>
-<span class="nb">len</span><span class="p">(</span><span class="n">team_data</span><span class="p">)</span>
-</pre></div>
-
-
-<div class="highlight"><pre><span></span>32
-</pre></div>
-
-
-<h2>The heavy lifting</h2>
-<p>Build player_data from the combined table rows that were parsed from all the links above.  This takes some time to execute.  </p>
-<div class="highlight"><pre><span></span><span class="c1">#data_rows = [row for row in soup.find(&quot;td&quot;, &quot;center&quot;).find_all(&quot;tr&quot;)]</span>
-<span class="n">table_data</span> <span class="o">=</span> <span class="p">[]</span>
-
-<span class="c1">#soup = BeautifulSoup(team_data[0], &#39;lxml&#39;)</span>
-
-<span class="c1">#This needs to be a nested for loop because inner items of the list are BeautifulSoup Elements</span>
-<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">team_data</span><span class="p">:</span>
-    <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">row</span><span class="p">:</span>
-        <span class="c1">#print(type(element))</span>
-        <span class="k">if</span> <span class="n">soup</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="s2">&quot;td&quot;</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;class&quot;</span><span class="p">:</span><span class="s2">&quot; right xs-hide &quot;</span><span class="p">})</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="n">table_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">element</span><span class="o">.</span><span class="n">get_text</span><span class="p">())</span>
-
-<span class="n">player_data</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">table_data</span><span class="p">:</span>
-    <span class="n">player_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">))</span>
-    <span class="c1">#print(player_data)</span>
-
-<span class="nb">len</span><span class="p">(</span><span class="n">player_data</span><span class="p">)</span>    
-</pre></div>
-
-
-<div class="highlight"><pre><span></span>1725
-</pre></div>
-
-
-<h2>Loada DataFrame and reshape the data</h2>
-<p>In the next cells I load the data into a DataFrame and reshape it so that it has 12 columns, fix the header, and remove the invalid rows</p>
-<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
-<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">player_data</span><span class="p">)</span>
-<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-
-
-<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">[[</span><span class="mi">0</span><span class="p">]])</span>
-<span class="c1">#df.set_index(1, inplace=True)</span>
-<span class="k">print</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-<span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
-</pre></div>
-
-
-<div class="highlight"><pre><span></span>(1724, 12)
+<span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
 </pre></div>
 
 
@@ -218,717 +369,308 @@ http://www.spotrac.com/nfl/washington-redskins/cap/
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>2</th>
-      <th>3</th>
-      <th>4</th>
-      <th>5</th>
-      <th>6</th>
-      <th>7</th>
-      <th>8</th>
-      <th>9</th>
-      <th>10</th>
-      <th>11</th>
-      <th>12</th>
-      <th>13</th>
+      <th>lang</th>
+      <th>place</th>
+      <th>text</th>
+      <th>word_count</th>
+      <th>no_punctuation</th>
+      <th>cleaned</th>
     </tr>
   </thead>
   <tbody>
     <tr>
+      <th>0</th>
+      <td>en</td>
+      <td>None</td>
+      <td>This. https://t.co/UNKep8L5EY</td>
+      <td>2</td>
+      <td>This httpstcoUNKep8L5EY</td>
+      <td>this</td>
+    </tr>
+    <tr>
       <th>1</th>
-      <td>Larry Fitzgerald</td>
-      <td>WR</td>
-      <td>$11,000,000</td>
-      <td>$2,500,000</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>$2,350,000</td>
-      <td>-</td>
-      <td>-</td>
-      <td>$15,850,000</td>
-      <td>9.44</td>
+      <td>en</td>
+      <td>None</td>
+      <td>Wanna see England in the final but Croatia is clearly the better side\n\n#ENGCRO #WorldCup</td>
+      <td>14</td>
+      <td>Wanna see England in the final but Croatia is clearly the better side\n\nENGCRO WorldCup</td>
+      <td>wanna see england in the final but croatia is clearly the better side engcro worldcup</td>
     </tr>
     <tr>
       <th>2</th>
-      <td>Patrick Peterson</td>
-      <td>CB</td>
-      <td>$9,750,000</td>
-      <td>$3,072,377</td>
-      <td>-</td>
-      <td>-</td>
-      <td>$250,000</td>
-      <td>$634,588</td>
-      <td>-</td>
-      <td>($18,048,518)</td>
-      <td>$13,706,965</td>
-      <td>8.16</td>
+      <td>en</td>
+      <td>None</td>
+      <td>C’mon #England we really can do this. Dig deep. #EnglandvsCroatia #ThreeLionsOnAShirt</td>
+      <td>11</td>
+      <td>Cmon England we really can do this Dig deep EnglandvsCroatia ThreeLionsOnAShirt</td>
+      <td>c mon england we really can do this dig deep englandvscroatia threelionsonashirt</td>
     </tr>
     <tr>
       <th>3</th>
-      <td>Chandler Jones</td>
-      <td>OLB</td>
-      <td>$7,000,000</td>
-      <td>$3,000,000</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>($31,000,000)</td>
-      <td>$10,000,000</td>
-      <td>5.96</td>
+      <td>en</td>
+      <td>None</td>
+      <td>RT @FlickSaudi: If England lose This is How The Streets Of London Will Look https://t.co/V8AT2RRn5p</td>
+      <td>15</td>
+      <td>RT FlickSaudi If England lose This is How The Streets Of London Will Look httpstcoV8AT2RRn5p</td>
+      <td>rt if england lose this is how the streets of london will look</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>Jared Veldheer</td>
-      <td>RT</td>
-      <td>$6,500,000</td>
-      <td>$1,250,000</td>
-      <td>$250,000</td>
-      <td>-</td>
-      <td>-</td>
-      <td>$2,000,000</td>
-      <td>-</td>
-      <td>($6,500,000)</td>
-      <td>$10,000,000</td>
-      <td>5.96</td>
+      <td>en</td>
+      <td>None</td>
+      <td>RT @hermannkelly: .@TonightShowTV3 I’m into the breach on the TV3 Tonight Show, Wednesday 11th July at 11pm. #WorldCup⁠ ⁠⁠ ⁠ \nAs we already…</td>
+      <td>23</td>
+      <td>RT hermannkelly TonightShowTV3 Im into the breach on the TV3 Tonight Show Wednesday 11th July at 11pm WorldCup   \nAs we already</td>
+      <td>rt i m into the breach on the tv tonight show wednesday th july at pm worldcup as we already</td>
     </tr>
     <tr>
       <th>5</th>
-      <td>Tyrann Mathieu</td>
-      <td>FS</td>
-      <td>$4,750,000</td>
-      <td>$3,100,000</td>
-      <td>-</td>
-      <td>-</td>
-      <td>$250,000</td>
-      <td>-</td>
-      <td>-</td>
-      <td>($17,400,000)</td>
-      <td>$8,100,000</td>
-      <td>4.82</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-
-<div class="highlight"><pre><span></span><span class="n">players</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">team_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
-    <span class="k">if</span> <span class="n">row</span><span class="o">.</span><span class="n">get_text</span><span class="p">(</span><span class="s2">&quot;tr&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-        <span class="n">players</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span> 
-
-<span class="n">column_headers</span> <span class="o">=</span> <span class="p">[</span><span class="n">col</span><span class="o">.</span><span class="n">get_text</span><span class="p">()</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">players</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">find_all</span><span class="p">(</span><span class="s2">&quot;th&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">col</span><span class="o">.</span><span class="n">get_text</span><span class="p">()]</span>
-<span class="nb">len</span><span class="p">(</span><span class="n">column_headers</span><span class="p">)</span>
-</pre></div>
-
-
-<div class="highlight"><pre><span></span>12
-</pre></div>
-
-
-<div class="highlight"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">column_headers</span>
-<span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
-</pre></div>
-
-
-<div>
-<style>
-    .dataframe thead tr:only-child th {
-        text-align: right;
-    }
-
-    .dataframe thead th {
-        text-align: left;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>Active Players  (53)</th>
-      <th>Pos.</th>
-      <th>Base Salary</th>
-      <th>Signing Bonus</th>
-      <th>Roster Bonus</th>
-      <th>Option Bonus</th>
-      <th>Workout Bonus</th>
-      <th>Restruc. Bonus</th>
-      <th>Misc.</th>
-      <th>Dead Cap</th>
-      <th>Cap Hit</th>
-      <th>Cap %</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>1</th>
-      <td>Larry Fitzgerald</td>
-      <td>WR</td>
-      <td>$11,000,000</td>
-      <td>$2,500,000</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>$2,350,000</td>
-      <td>-</td>
-      <td>-</td>
-      <td>$15,850,000</td>
-      <td>9.44</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>Patrick Peterson</td>
-      <td>CB</td>
-      <td>$9,750,000</td>
-      <td>$3,072,377</td>
-      <td>-</td>
-      <td>-</td>
-      <td>$250,000</td>
-      <td>$634,588</td>
-      <td>-</td>
-      <td>($18,048,518)</td>
-      <td>$13,706,965</td>
-      <td>8.16</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>Chandler Jones</td>
-      <td>OLB</td>
-      <td>$7,000,000</td>
-      <td>$3,000,000</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>($31,000,000)</td>
-      <td>$10,000,000</td>
-      <td>5.96</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>Jared Veldheer</td>
-      <td>RT</td>
-      <td>$6,500,000</td>
-      <td>$1,250,000</td>
-      <td>$250,000</td>
-      <td>-</td>
-      <td>-</td>
-      <td>$2,000,000</td>
-      <td>-</td>
-      <td>($6,500,000)</td>
-      <td>$10,000,000</td>
-      <td>5.96</td>
-    </tr>
-    <tr>
-      <th>5</th>
-      <td>Tyrann Mathieu</td>
-      <td>FS</td>
-      <td>$4,750,000</td>
-      <td>$3,100,000</td>
-      <td>-</td>
-      <td>-</td>
-      <td>$250,000</td>
-      <td>-</td>
-      <td>-</td>
-      <td>($17,400,000)</td>
-      <td>$8,100,000</td>
-      <td>4.82</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-
-<div class="highlight"><pre><span></span><span class="c1">#The header repeated itself in the data.  This didn&#39;t reveal itself until the data type conversion step below</span>
-<span class="c1">#but this fixes all occurrences of it.</span>
-<span class="n">rows_to_be_dropped</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Cap Hit&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;Cap %&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">index</span>
-<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">rows_to_be_dropped</span><span class="p">)</span>
-</pre></div>
-
-
-<div class="highlight"><pre><span></span><span class="c1">#Apply a regex to convert the &#39;Cap Hit&#39; column from a string to a float.  </span>
-<span class="n">df</span><span class="p">[</span><span class="s1">&#39;Cap Hit&#39;</span><span class="p">]</span> <span class="o">=</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Cap Hit&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;[\$,)]&#39;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">regex</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span> <span class="s1">&#39;[(]&#39;</span><span class="p">,</span><span class="s1">&#39;-&#39;</span><span class="p">,</span>   <span class="n">regex</span><span class="o">=</span><span class="bp">True</span> <span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">))</span>
-
-<span class="c1">#Sanity check to make sure it worked.</span>
-<span class="n">df</span><span class="p">[</span><span class="s1">&#39;Cap Hit&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-</pre></div>
-
-
-<div class="highlight"><pre><span></span>4159332264.0
-</pre></div>
-
-
-<div class="highlight"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">shape</span>
-<span class="c1">#53*32 = 1696 there should be this many rows in the data set, how did I end up with 3 extra??</span>
-<span class="c1">#That&#39;s such an odd number?</span>
-</pre></div>
-
-
-<div class="highlight"><pre><span></span>(1693, 13)
-</pre></div>
-
-
-<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
-<span class="n">df</span><span class="p">[</span><span class="s1">&#39;Cap Hit&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">25</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s2">&quot;bar&quot;</span><span class="p">,</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span><span class="mi">12</span><span class="p">))</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-</pre></div>
-
-
-<p><img alt="png" src="output_21_0.png"></p>
-<div class="highlight"><pre><span></span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Cap Average By Game&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Cap Hit&#39;</span><span class="p">]</span><span class="o">/</span><span class="mi">16</span>
-</pre></div>
-
-
-<div class="highlight"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">25</span><span class="p">)</span>
-<span class="c1">#Assuming 16 games &amp; all his bunuses - Larry Fitzgerald makes $9.9M a game!!</span>
-</pre></div>
-
-
-<div>
-<style>
-    .dataframe thead tr:only-child th {
-        text-align: right;
-    }
-
-    .dataframe thead th {
-        text-align: left;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>Active Players  (53)</th>
-      <th>Pos.</th>
-      <th>Base Salary</th>
-      <th>Signing Bonus</th>
-      <th>Roster Bonus</th>
-      <th>Option Bonus</th>
-      <th>Workout Bonus</th>
-      <th>Restruc. Bonus</th>
-      <th>Misc.</th>
-      <th>Dead Cap</th>
-      <th>Cap Hit</th>
-      <th>Cap %</th>
-      <th>Cap Average By Game</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>1</th>
-      <td>Larry Fitzgerald</td>
-      <td>WR</td>
-      <td>$11,000,000</td>
-      <td>$2,500,000</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>$2,350,000</td>
-      <td>-</td>
-      <td>-</td>
-      <td>15850000.0</td>
-      <td>9.44</td>
-      <td>990625.0000</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>Patrick Peterson</td>
-      <td>CB</td>
-      <td>$9,750,000</td>
-      <td>$3,072,377</td>
-      <td>-</td>
-      <td>-</td>
-      <td>$250,000</td>
-      <td>$634,588</td>
-      <td>-</td>
-      <td>($18,048,518)</td>
-      <td>13706965.0</td>
-      <td>8.16</td>
-      <td>856685.3125</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>Chandler Jones</td>
-      <td>OLB</td>
-      <td>$7,000,000</td>
-      <td>$3,000,000</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>($31,000,000)</td>
-      <td>10000000.0</td>
-      <td>5.96</td>
-      <td>625000.0000</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>Jared Veldheer</td>
-      <td>RT</td>
-      <td>$6,500,000</td>
-      <td>$1,250,000</td>
-      <td>$250,000</td>
-      <td>-</td>
-      <td>-</td>
-      <td>$2,000,000</td>
-      <td>-</td>
-      <td>($6,500,000)</td>
-      <td>10000000.0</td>
-      <td>5.96</td>
-      <td>625000.0000</td>
-    </tr>
-    <tr>
-      <th>5</th>
-      <td>Tyrann Mathieu</td>
-      <td>FS</td>
-      <td>$4,750,000</td>
-      <td>$3,100,000</td>
-      <td>-</td>
-      <td>-</td>
-      <td>$250,000</td>
-      <td>-</td>
-      <td>-</td>
-      <td>($17,400,000)</td>
-      <td>8100000.0</td>
-      <td>4.82</td>
-      <td>506250.0000</td>
+      <td>th</td>
+      <td>None</td>
+      <td>RT @mthai: เกมส์ยัง​ไม่จบ... ต่อเวลาพิเศษ​ 30  นาที\n\nโครเอเชีย​ 🇭🇷       1  :   1         🏴󠁧󠁢󠁥󠁮󠁧󠁿​ อังกฤษ​\n เปริซิช  68'              ⚽…</td>
+      <td>47</td>
+      <td>RT mthai เกมสยงไมจบ ตอเวลาพเศษ 30  นาท\n\nโครเอเชย        1     1          องกฤษ\n เปรซช  68</td>
+      <td>rt</td>
     </tr>
     <tr>
       <th>6</th>
-      <td>Drew Stanton</td>
-      <td>QB</td>
-      <td>$2,550,000</td>
-      <td>$1,000,000</td>
-      <td>$500,000</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>($3,550,000)</td>
-      <td>4050000.0</td>
-      <td>2.41</td>
-      <td>253125.0000</td>
+      <td>en</td>
+      <td>None</td>
+      <td>William made an England flag at nursery today. I hope he gets the need for it on Sunday. #ENGvCRO… https://t.co/Cjf76wWtPG</td>
+      <td>20</td>
+      <td>William made an England flag at nursery today I hope he gets the need for it on Sunday ENGvCRO httpstcoCjf76wWtPG</td>
+      <td>william made an england flag at nursery today i hope he gets the need for it on sunday engvcro</td>
     </tr>
     <tr>
       <th>7</th>
-      <td>Jermaine Gresham</td>
-      <td>TE</td>
-      <td>$2,000,000</td>
-      <td>$1,750,000</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>($13,000,000)</td>
-      <td>3750000.0</td>
-      <td>2.23</td>
-      <td>234375.0000</td>
+      <td>en</td>
+      <td>None</td>
+      <td>This is why england can never win d world cup again argue with ur ancestors #ENGCRO</td>
+      <td>16</td>
+      <td>This is why england can never win d world cup again argue with ur ancestors ENGCRO</td>
+      <td>this is why england can never win d world cup again argue with ur ancestors engcro</td>
     </tr>
     <tr>
       <th>8</th>
-      <td>Corey Peters</td>
-      <td>DT</td>
-      <td>$2,750,000</td>
-      <td>$666,668</td>
-      <td>$93,750</td>
-      <td>-</td>
-      <td>$150,000</td>
-      <td>-</td>
-      <td>-</td>
-      <td>($3,566,668)</td>
-      <td>3660418.0</td>
-      <td>2.18</td>
-      <td>228776.1250</td>
+      <td>en</td>
+      <td>None</td>
+      <td>RT @PurelyFootball: Hyde Park when Kieran Trippier scored for England🏴󠁧󠁢󠁥󠁮󠁧󠁿\n\nAbsolute scenes!🍻 https://t.co/SLb6dFcG0g</td>
+      <td>12</td>
+      <td>RT PurelyFootball Hyde Park when Kieran Trippier scored for England\n\nAbsolute scenes httpstcoSLb6dFcG0g</td>
+      <td>rt hyde park when kieran trippier scored for england absolute scenes</td>
     </tr>
     <tr>
       <th>9</th>
-      <td>Justin Bethel</td>
-      <td>CB</td>
-      <td>$2,000,000</td>
-      <td>$1,500,000</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>($3,500,000)</td>
-      <td>3500000.0</td>
-      <td>2.08</td>
-      <td>218750.0000</td>
+      <td>en</td>
+      <td>None</td>
+      <td>Honestly? I’m ashamed about the protests in England... I’m ashamed we aren’t as organized and doing as much protest… https://t.co/JBLcWtfgsX</td>
+      <td>20</td>
+      <td>Honestly Im ashamed about the protests in England Im ashamed we arent as organized and doing as much protest httpstcoJBLcWtfgsX</td>
+      <td>honestly i m ashamed about the protests in england i m ashamed we aren t as organized and doing as much protest</td>
     </tr>
     <tr>
       <th>10</th>
-      <td>Antoine Bethea</td>
-      <td>SS</td>
-      <td>$2,000,000</td>
-      <td>$666,666</td>
-      <td>$500,000</td>
-      <td>-</td>
-      <td>$250,000</td>
-      <td>-</td>
-      <td>-</td>
-      <td>($4,250,000)</td>
-      <td>3416666.0</td>
-      <td>2.04</td>
-      <td>213541.6250</td>
+      <td>en</td>
+      <td>None</td>
+      <td>RT @SavageLord10: Snap back thou  this an old video guyz help me go viral tag @Aylo_SA @tloucolt @shelm_eric @flickice #imsorrychallenge #M…</td>
+      <td>22</td>
+      <td>RT SavageLord10 Snap back thou  this an old video guyz help me go viral tag Aylo_SA tloucolt shelm_eric flickice imsorrychallenge M</td>
+      <td>rt snap back thou this an old video guyz help me go viral tag sa eric imsorrychallenge m</td>
     </tr>
     <tr>
       <th>11</th>
-      <td>Phil Dawson</td>
-      <td>K</td>
-      <td>$2,000,000</td>
-      <td>$500,000</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>($3,000,000)</td>
-      <td>2500000.0</td>
-      <td>1.49</td>
-      <td>156250.0000</td>
+      <td>en</td>
+      <td>None</td>
+      <td>RT @petertimmins3: If Croatia win by cheating tonight, I expect at least 17million people to respect the result. Especially you, @JuliaHB1</td>
+      <td>21</td>
+      <td>RT petertimmins3 If Croatia win by cheating tonight I expect at least 17million people to respect the result Especially you JuliaHB1</td>
+      <td>rt if croatia win by cheating tonight i expect at least million people to respect the result especially you</td>
     </tr>
     <tr>
       <th>12</th>
-      <td>Josh Mauro</td>
-      <td>DT</td>
-      <td>$750,000</td>
-      <td>$500,000</td>
-      <td>$1,250,000</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>($3,000,000)</td>
-      <td>2500000.0</td>
-      <td>1.49</td>
-      <td>156250.0000</td>
+      <td>en</td>
+      <td>None</td>
+      <td>RT @KEEMSTAR: England wins \n\nI saw it in a dream</td>
+      <td>10</td>
+      <td>RT KEEMSTAR England wins \n\nI saw it in a dream</td>
+      <td>rt england wins i saw it in a dream</td>
     </tr>
     <tr>
       <th>13</th>
-      <td>Deone Bucannon</td>
-      <td>ILB</td>
-      <td>$1,471,255</td>
-      <td>$981,673</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>($981,673)</td>
-      <td>2452928.0</td>
-      <td>1.46</td>
-      <td>153308.0000</td>
+      <td>en</td>
+      <td>None</td>
+      <td>We’re going a bit Spursy here England 🙈</td>
+      <td>8</td>
+      <td>Were going a bit Spursy here England</td>
+      <td>we re going a bit spursy here england</td>
     </tr>
     <tr>
       <th>14</th>
-      <td>Haason Reddick</td>
-      <td>ILB</td>
-      <td>$465,000</td>
-      <td>$1,985,539</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>($7,942,157)</td>
-      <td>2450539.0</td>
-      <td>1.46</td>
-      <td>153158.6875</td>
+      <td>en</td>
+      <td>None</td>
+      <td>RT @Predictionhq: correct score 1-1✔️\nCroatia over 0.5 Team Goals ✔️\nCroatia over 3.5 corners ✔️\nOver 1.5 FT goals \n100% Record https://t.c…</td>
+      <td>20</td>
+      <td>RT Predictionhq correct score 11\nCroatia over 05 Team Goals \nCroatia over 35 corners \nOver 15 FT goals \n100 Record httpstc</td>
+      <td>rt correct score croatia over team goals croatia over corners over ft goals record</td>
     </tr>
     <tr>
       <th>15</th>
-      <td>Karlos Dansby</td>
-      <td>ILB</td>
-      <td>$1,000,000</td>
-      <td>$700,000</td>
-      <td>$200,000</td>
-      <td>-</td>
-      <td>$100,000</td>
-      <td>-</td>
-      <td>$250,000</td>
-      <td>($1,800,000)</td>
-      <td>2250000.0</td>
-      <td>1.34</td>
-      <td>140625.0000</td>
+      <td>en</td>
+      <td>None</td>
+      <td>RT @alexandramusic: Literally can’t cope. COME ON ENGLAND !!! 🏴󠁧󠁢󠁥󠁮󠁧󠁿</td>
+      <td>10</td>
+      <td>RT alexandramusic Literally cant cope COME ON ENGLAND</td>
+      <td>rt literally can t cope come on england</td>
     </tr>
     <tr>
       <th>16</th>
-      <td>Robert Nkemdiche</td>
-      <td>DE</td>
-      <td>$840,936</td>
-      <td>$1,113,745</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>($6,536,854)</td>
-      <td>1954681.0</td>
-      <td>1.16</td>
-      <td>122167.5625</td>
+      <td>en</td>
+      <td>None</td>
+      <td>Genuinely feel sick right now #ENGCRO #WorldCup</td>
+      <td>7</td>
+      <td>Genuinely feel sick right now ENGCRO WorldCup</td>
+      <td>genuinely feel sick right now engcro worldcup</td>
     </tr>
     <tr>
       <th>17</th>
-      <td>Tramon Williams</td>
-      <td>CB</td>
-      <td>$1,100,000</td>
-      <td>$500,000</td>
-      <td>$350,000</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>($1,600,000)</td>
-      <td>1950000.0</td>
-      <td>1.16</td>
-      <td>121875.0000</td>
+      <td>en</td>
+      <td>None</td>
+      <td>Okay the pace seems to be slightly better for #ENGCRO - not sure it's going to be enough at this stage though. Typi… https://t.co/CXsEmkrss4</td>
+      <td>24</td>
+      <td>Okay the pace seems to be slightly better for ENGCRO  not sure its going to be enough at this stage though Typi httpstcoCXsEmkrss4</td>
+      <td>okay the pace seems to be slightly better for engcro not sure it s going to be enough at this stage though typi</td>
     </tr>
     <tr>
       <th>18</th>
-      <td>Alex Boone</td>
-      <td>G</td>
-      <td>$900,000</td>
-      <td>-</td>
-      <td>$437,500</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>$600,000</td>
-      <td>($1,400,000)</td>
-      <td>1937500.0</td>
-      <td>1.15</td>
-      <td>121093.7500</td>
+      <td>en</td>
+      <td>None</td>
+      <td>Ok extra time let’s wrap this up and return England to their natural state; moaning into their pints… https://t.co/8qQLHyjHxN</td>
+      <td>19</td>
+      <td>Ok extra time lets wrap this up and return England to their natural state moaning into their pints httpstco8qQLHyjHxN</td>
+      <td>ok extra time let s wrap this up and return england to their natural state moaning into their pints</td>
     </tr>
     <tr>
       <th>19</th>
-      <td>John Brown</td>
-      <td>WR</td>
-      <td>$1,797,000</td>
-      <td>$135,725</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>($135,725)</td>
-      <td>1932725.0</td>
-      <td>1.15</td>
-      <td>120795.3125</td>
-    </tr>
-    <tr>
-      <th>20</th>
-      <td>A.Q. Shipley</td>
-      <td>C</td>
-      <td>$775,000</td>
-      <td>$362,500</td>
-      <td>$250,000</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>$250,000</td>
-      <td>($1,500,000)</td>
-      <td>1637500.0</td>
-      <td>0.98</td>
-      <td>102343.7500</td>
-    </tr>
-    <tr>
-      <th>21</th>
-      <td>Jaron Brown</td>
-      <td>WR</td>
-      <td>$775,000</td>
-      <td>$317,500</td>
-      <td>$218,750</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>($1,092,500)</td>
-      <td>1311250.0</td>
-      <td>0.78</td>
-      <td>81953.1250</td>
-    </tr>
-    <tr>
-      <th>22</th>
-      <td>Troy Niklas</td>
-      <td>TE</td>
-      <td>$968,632</td>
-      <td>$311,509</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>($311,509)</td>
-      <td>1280141.0</td>
-      <td>0.76</td>
-      <td>80008.8125</td>
-    </tr>
-    <tr>
-      <th>23</th>
-      <td>Budda Baker</td>
-      <td>S</td>
-      <td>$465,000</td>
-      <td>$776,819</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>($3,882,732)</td>
-      <td>1241819.0</td>
-      <td>0.74</td>
-      <td>77613.6875</td>
-    </tr>
-    <tr>
-      <th>24</th>
-      <td>Frostee Rucker</td>
-      <td>DT</td>
-      <td>$1,000,000</td>
-      <td>$80,000</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>($1,080,000)</td>
-      <td>1080000.0</td>
-      <td>0.64</td>
-      <td>67500.0000</td>
-    </tr>
-    <tr>
-      <th>25</th>
-      <td>Andy Lee</td>
-      <td>P</td>
-      <td>$1,000,000</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>-</td>
-      <td>($1,000,000)</td>
-      <td>1000000.0</td>
-      <td>0.60</td>
-      <td>62500.0000</td>
+      <td>en</td>
+      <td>None</td>
+      <td>I’d love some sideline reporting from @BarstoolBigCat in the next World Cup</td>
+      <td>12</td>
+      <td>Id love some sideline reporting from BarstoolBigCat in the next World Cup</td>
+      <td>i d love some sideline reporting from in the next world cup</td>
     </tr>
   </tbody>
 </table>
-</div>                </article>
+</div>
+
+<h2>Stopwords Removal</h2>
+<div class="highlight"><pre><span></span><span class="c1">#stop = set(stopwords.words(&#39;english&#39;))</span>
+<span class="c1">#df[&#39;final&#39;] = df[&#39;cleaned&#39;].apply(lambda x: [item for item in x if item not in stop])</span>
+<span class="c1">#df[&#39;text&#39;].apply(lambda x: [item for item in x if item not in stop])</span>
+</pre></div>
+
+
+<h2>Sentiment Analysis</h2>
+<p>Using Textblob.sentiment to detect the sentiment of the cleaned tweet.  This returns a tuple of polarity and subjectivity.  The polarity is indicative of the sentiment, a positive sentiment will have a value closer to 1 while a negative sentiment will be closer to -1.  </p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">textblob</span> <span class="kn">import</span> <span class="n">TextBlob</span>
+<span class="n">train</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">cleaned</span><span class="p">[:</span><span class="mi">100</span><span class="p">]</span>
+<span class="c1">#classifier = NaiveBayesClassifier(train, format=None)</span>
+
+<span class="c1">#train.apply(lambda x: TextBlob(x).sentiment)</span>
+
+<span class="n">df</span><span class="p">[</span><span class="s1">&#39;sentiment&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;cleaned&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">TextBlob</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">sentiment</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;positive&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;sentiment&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span>
+<span class="n">df</span><span class="p">[</span><span class="s1">&#39;negative&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;sentiment&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span>
+<span class="n">df</span><span class="p">[</span><span class="s1">&#39;neutral&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;sentiment&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span>
+
+<span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Negative&#39;</span><span class="p">,</span><span class="s1">&#39;Postive&#39;</span><span class="p">,</span><span class="s1">&#39;Neutral&#39;</span><span class="p">]</span>
+
+<span class="n">df_summary</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;negative&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;positive&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;neutral&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()],</span> <span class="n">index</span><span class="o">=</span><span class="n">labels</span><span class="p">)</span>
+<span class="n">df_summary</span>
+</pre></div>
+
+
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Negative</th>
+      <td>47</td>
+    </tr>
+    <tr>
+      <th>Postive</th>
+      <td>124</td>
+    </tr>
+    <tr>
+      <th>Neutral</th>
+      <td>205</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="o">%</span><span class="n">matplotlib</span> <span class="n">inline</span>
+<span class="n">fig_size</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s2">&quot;figure.figsize&quot;</span><span class="p">]</span>
+<span class="n">fig_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">12</span>
+<span class="n">fig_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">9</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s2">&quot;figure.figsize&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fig_size</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="n">df_summary</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s1">&#39;bar&#39;</span><span class="p">);</span>
+</pre></div>
+
+
+<p><img alt="png" src="output_20_0.png"></p>
+<div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gcf</span><span class="p">()</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">set_size_inches</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">9</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;sentiment&#39;</span><span class="p">]);</span>
+</pre></div>
+
+
+<p><img alt="png" src="output_21_0.png"></p>                </article>
             </aside><!-- /#featured -->
                 <section id="content" class="body">
                     <h1>Other articles</h1>
                     <ol id="posts-list" class="hfeed">
+
+            <li><article class="hentry">
+                <header>
+                    <h1><a href="/nfl-salary-part2.html" rel="bookmark"
+                           title="Permalink to NFL Salary Scraping - Part 2">NFL Salary Scraping - Part 2</a></h1>
+                </header>
+
+                <div class="entry-content">
+<footer class="post-info">
+        <span>Sun 26 November 2017</span>
+<span>| tags: <a href="/tag/python.html">Python</a><a href="/tag/pandas.html">Pandas</a><a href="/tag/web-scraping.html">Web Scraping</a><a href="/tag/matplotlib.html">Matplotlib</a></span>
+</footer><!-- /.post-info -->                <p>Part 2 - Web Scraping NFL Salary Data Using Python</p>
+                <a class="readmore" href="/nfl-salary-part2.html">read more</a>
+                </div><!-- /.entry-content -->
+            </article></li>
 
             <li><article class="hentry">
                 <header>

@@ -23,97 +23,635 @@
 
             <aside id="featured" class="body">
                 <article>
-                    <h1 class="entry-title"><a href="/plot-halal-restaurants.html">Plot Halal Restaurants</a></h1>
+                    <h1 class="entry-title"><a href="/sentiment-analysis.html">World Cup Tweet Sentiment Analysis</a></h1>
 <footer class="post-info">
-        <span>Sun 24 December 2017</span>
-<span>| tags: <a href="/tag/python.html">Python</a></span>
-</footer><!-- /.post-info --><h1>Background and Overview</h1>
-<p>In my first 2 Python related posts I used techniques to scrape data from the web and turn that into information.  In case you missed it check out my <a href="https://wcontractor.github.io/nfl-salary.html">NFL Salary Scraping Part 1</a> and <a href="https://wcontractor.github.io/nfl-salary-part2.html">Part 2</a> where I show how to use requests, BeautifulSoup, Pandas, and Matplotlib to learn that the highest paid players in the NFL in 2017 are Larry Fitzgerald and Patrick Peterson.</p>
-<p>This post is an evolution from those posts, instead of using scraping data I'm using the Yelp and Google maps APIs to collect information and present the results on a map with markers.</p>
-<p>For context I used the Yelp Fusion API to peform a business search for term of 'halal'.  Now by no means am I an expert on this topic, but the word halal mean permissable to eat and my wife and my wife and I frequent these restaurants so I thought it would be interesting to map those locations near our house.</p>
-<div class="highlight"><pre><span></span><span class="c1">#imports using json, gmaps, and pandas</span>
-<span class="kn">import</span> <span class="nn">json</span><span class="o">,</span> <span class="nn">gmaps</span>
+        <span>Wed 18 July 2018</span>
+<span>| tags: <a href="/tag/python.html">Python</a><a href="/tag/pandas.html">Pandas</a><a href="/tag/matplotlib.html">Matplotlib</a><a href="/tag/nlp.html">NLP</a></span>
+</footer><!-- /.post-info --><h2>Background</h2>
+<p>Normally I open these posts with some background about what I'm trying to accomplish, some perspective about my thought process as I worked through the problem, and just a little bit about the why.  I have been away for some time though, It was my intention to work through a mini-project at least once a month and turn that into a post. It has been some time since my last post. Life has taken over, my wife and I have a 6 month old baby girl and she keeps us very busy. However, my passion for learning, building, and creating </p>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">json</span><span class="o">,</span> <span class="nn">pprint</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
 </pre></div>
 
 
-<h2>Load Data</h2>
-<p>Admittedly to get the data from the Yelp API I used Postman instead of interfacing with the API directly.  This was just faster to get a JSON file of the results I was looking for.  To do this you need to create an app and get an API Key from Yelps Developer website.  I saved the results from Postman into a text file and then worked locally from there.</p>
-<div class="highlight"><pre><span></span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;Yelp_Halal_Businesses.JSON&quot;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="nb">file</span><span class="p">:</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="nb">file</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">nltk.corpus</span> <span class="kn">import</span> <span class="n">stopwords</span>
+<span class="kn">from</span> <span class="nn">nltk</span> <span class="kn">import</span> <span class="n">sent_tokenize</span>
 
-<span class="n">json_data</span> <span class="o">=</span> <span class="n">js</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">display</span><span class="o">.</span><span class="n">max_rows</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s1">&#39;display.max_colwidth&#39;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 
 
-<h2>Get Locations</h2>
-<p>In the cell below I iterate over the items in json_Data and create 2 lists that store that latitude and longitude.  I then zip those 2 lists together to create 1 so that I can pass the coordinates of the halal restaurants to gmaps.</p>
-<div class="highlight"><pre><span></span><span class="n">lat</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="nb">long</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">json_data</span><span class="p">[</span><span class="s1">&#39;businesses&#39;</span><span class="p">]:</span>
-    <span class="n">lat</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s1">&#39;coordinates&#39;</span><span class="p">][</span><span class="s1">&#39;latitude&#39;</span><span class="p">])</span>
-    <span class="nb">long</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s1">&#39;coordinates&#39;</span><span class="p">][</span><span class="s1">&#39;longitude&#39;</span><span class="p">])</span>
+<div class="highlight"><pre><span></span><span class="n">tweet_data</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">tweet_file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;world_cup_tweets.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">tweet_file</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">tweet</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+        <span class="n">tweet_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tweet</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">continue</span>
 
-<span class="n">lat_long</span> <span class="o">=</span> <span class="nb">list</span><span class="p">((</span><span class="nb">zip</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span><span class="nb">long</span><span class="p">)))</span>
-<span class="n">lat_long</span>
+<span class="nb">len</span><span class="p">(</span><span class="n">tweet_data</span><span class="p">)</span>
 </pre></div>
 
 
-<div class="highlight"><pre><span></span>[(40.56378, -74.694418),
- (40.5661650002003, -74.6275533735752),
- (40.55492, -74.52609),
- (40.5036928033583, -74.6444269892345),
- (40.62008, -74.49021),
- (40.55527, -74.52661),
- (40.598919, -74.480728),
- (40.437622, -74.538564),
- (40.6171176417404, -74.494637063977),
- (40.61933, -74.4927699),
- (40.4340821413289, -74.5478186003373),
- (40.62008, -74.49021),
- (40.4473744, -74.4966087),
- (40.4974297303228, -74.4482234326057),
- (40.4379627796526, -74.5361950967858),
- (40.5104061, -74.409281),
- (40.4345526013837, -74.5460039343956),
- (40.4977595713994, -74.4490539963252),
- (40.5721031, -74.3360702),
- (40.4992091, -74.4272637)]
+<div class="highlight"><pre><span></span>376
 </pre></div>
 
 
-<h2>Test the Google Maps API</h2>
-<p>The code snippet below is a copy/paste from the gmaps documentation.  I did this to make sure I had the Google API Key setup correctly.  </p>
-<p>The information in gmaps documenation is really quite good.  Check it out <a href="https://media.readthedocs.org/pdf/jupyter-gmaps/latest/jupyter-gmaps.pdf">jupyter-gmaps.pdf</a> </p>
-<div class="highlight"><pre><span></span><span class="n">gmaps</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="s2">&quot;AI...&quot;</span><span class="p">)</span>
-<span class="n">marker_locations</span> <span class="o">=</span> <span class="p">[</span>
-<span class="p">(</span><span class="o">-</span><span class="mf">34.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">59.166672</span><span class="p">),</span>
-<span class="p">(</span><span class="o">-</span><span class="mf">32.23333</span><span class="p">,</span> <span class="o">-</span><span class="mf">64.433327</span><span class="p">),</span>
-<span class="p">(</span><span class="mf">40.166672</span><span class="p">,</span> <span class="mf">44.133331</span><span class="p">),</span>
-<span class="p">(</span><span class="mf">51.216671</span><span class="p">,</span> <span class="mf">5.0833302</span><span class="p">),</span>
-<span class="p">(</span><span class="mf">51.333328</span><span class="p">,</span> <span class="mf">4.25</span><span class="p">)</span>
-<span class="p">]</span>
-<span class="n">fig</span> <span class="o">=</span> <span class="n">gmaps</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
-<span class="n">markers</span> <span class="o">=</span> <span class="n">gmaps</span><span class="o">.</span><span class="n">marker_layer</span><span class="p">(</span><span class="n">marker_locations</span><span class="p">)</span>
-<span class="n">fig</span><span class="o">.</span><span class="n">add_layer</span><span class="p">(</span><span class="n">markers</span><span class="p">)</span>
-<span class="n">fig</span>
+<div class="highlight"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">tweet_data</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;There are&#39;</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39; rows and&#39;</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39; columns in this dataset&#39;</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">columns</span>
 </pre></div>
 
 
-<div class="highlight"><pre><span></span>A Jupyter Widget
+<div class="highlight"><pre><span></span>There are 376  rows and 37  columns in this dataset
+
+
+
+
+
+Index([&#39;contributors&#39;, &#39;coordinates&#39;, &#39;created_at&#39;, &#39;display_text_range&#39;,
+       &#39;entities&#39;, &#39;extended_entities&#39;, &#39;extended_tweet&#39;, &#39;favorite_count&#39;,
+       &#39;favorited&#39;, &#39;filter_level&#39;, &#39;geo&#39;, &#39;id&#39;, &#39;id_str&#39;,
+       &#39;in_reply_to_screen_name&#39;, &#39;in_reply_to_status_id&#39;,
+       &#39;in_reply_to_status_id_str&#39;, &#39;in_reply_to_user_id&#39;,
+       &#39;in_reply_to_user_id_str&#39;, &#39;is_quote_status&#39;, &#39;lang&#39;, &#39;limit&#39;, &#39;place&#39;,
+       &#39;possibly_sensitive&#39;, &#39;quote_count&#39;, &#39;quoted_status&#39;,
+       &#39;quoted_status_id&#39;, &#39;quoted_status_id_str&#39;, &#39;quoted_status_permalink&#39;,
+       &#39;reply_count&#39;, &#39;retweet_count&#39;, &#39;retweeted&#39;, &#39;retweeted_status&#39;,
+       &#39;source&#39;, &#39;text&#39;, &#39;timestamp_ms&#39;, &#39;truncated&#39;, &#39;user&#39;],
+      dtype=&#39;object&#39;)
 </pre></div>
 
 
-<h2>Plot the locations</h2>
-<div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">gmaps</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
-<span class="n">markers</span> <span class="o">=</span> <span class="n">gmaps</span><span class="o">.</span><span class="n">marker_layer</span><span class="p">(</span><span class="n">lat_long</span><span class="p">)</span>
-<span class="n">fig</span><span class="o">.</span><span class="n">add_layer</span><span class="p">(</span><span class="n">markers</span><span class="p">)</span>
-<span class="n">fig</span>
+<h2>Drop unnecessary columns</h2>
+<p>There are a siginifance number of attributes on this data set that will not be used.  This step removes the unnessary columns.  </p>
+<div class="highlight"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s1">&#39;contributors&#39;</span><span class="p">,</span> <span class="s1">&#39;coordinates&#39;</span><span class="p">,</span> <span class="s1">&#39;extended_tweet&#39;</span><span class="p">,</span> <span class="s1">&#39;geo&#39;</span><span class="p">,</span> <span class="s1">&#39;created_at&#39;</span><span class="p">,</span> <span class="s1">&#39;display_text_range&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;entities&#39;</span><span class="p">,</span> <span class="s1">&#39;extended_entities&#39;</span><span class="p">,</span> <span class="s1">&#39;favorite_count&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;favorited&#39;</span><span class="p">,</span> <span class="s1">&#39;filter_level&#39;</span><span class="p">,</span> <span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;id_str&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;in_reply_to_screen_name&#39;</span><span class="p">,</span> <span class="s1">&#39;in_reply_to_status_id&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;in_reply_to_status_id_str&#39;</span><span class="p">,</span> <span class="s1">&#39;in_reply_to_user_id&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;in_reply_to_user_id_str&#39;</span><span class="p">,</span> <span class="s1">&#39;is_quote_status&#39;</span><span class="p">,</span> <span class="s1">&#39;limit&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;possibly_sensitive&#39;</span><span class="p">,</span> <span class="s1">&#39;quote_count&#39;</span><span class="p">,</span> <span class="s1">&#39;quoted_status&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;quoted_status_id&#39;</span><span class="p">,</span> <span class="s1">&#39;quoted_status_id_str&#39;</span><span class="p">,</span> <span class="s1">&#39;quoted_status_permalink&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;reply_count&#39;</span><span class="p">,</span> <span class="s1">&#39;retweet_count&#39;</span><span class="p">,</span> <span class="s1">&#39;retweeted&#39;</span><span class="p">,</span> <span class="s1">&#39;retweeted_status&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;source&#39;</span><span class="p">,</span><span class="s1">&#39;timestamp_ms&#39;</span><span class="p">,</span> <span class="s1">&#39;truncated&#39;</span><span class="p">,</span> <span class="s1">&#39;user&#39;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">shape</span>
 </pre></div>
 
 
-<div class="highlight"><pre><span></span>A Jupyter Widget
-</pre></div>                </article>
+<div class="highlight"><pre><span></span>(376, 3)
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">dtypes</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>lang     object
+place    object
+text     object
+dtype: object
+</pre></div>
+
+
+<h1>Fill in NAN's</h1>
+<p>There are rows where the text value is NAN and that is causing the pre-processing steps to error with a data type error.  Perhaps I could have filtered them out, but I chose to use fillna to fill them in with spaces.  </p>
+<div class="highlight"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">dtype</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>dtype(&#39;O&#39;)
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="c1">#df[&#39;cleaned&#39;] = df[&#39;text&#39;].str.replace(&#39;[^\w\s]&#39;, &#39;&#39;)</span>
+<span class="c1">#from nltk.corpus import stopwords</span>
+<span class="c1">#stop = stopwords.words(&#39;english&#39;)</span>
+<span class="c1">#df[&#39;text&#39;] = df[&#39;text&#39;].apply(lambda x: &quot; &quot;.join(x for x in x.split() if x not in stop))</span>
+<span class="c1">#df[&#39;text&#39;].head()</span>
+
+<span class="n">df</span><span class="p">[</span><span class="s1">&#39;word_count&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;text&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)))</span>
+<span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+</pre></div>
+
+
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>lang</th>
+      <th>place</th>
+      <th>text</th>
+      <th>word_count</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>en</td>
+      <td>None</td>
+      <td>This. https://t.co/UNKep8L5EY</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>en</td>
+      <td>None</td>
+      <td>Wanna see England in the final but Croatia is clearly the better side\n\n#ENGCRO #WorldCup</td>
+      <td>14</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>en</td>
+      <td>None</td>
+      <td>C’mon #England we really can do this. Dig deep. #EnglandvsCroatia #ThreeLionsOnAShirt</td>
+      <td>11</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>en</td>
+      <td>None</td>
+      <td>RT @FlickSaudi: If England lose This is How The Streets Of London Will Look https://t.co/V8AT2RRn5p</td>
+      <td>15</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>en</td>
+      <td>None</td>
+      <td>RT @hermannkelly: .@TonightShowTV3 I’m into the breach on the TV3 Tonight Show, Wednesday 11th July at 11pm. #WorldCup⁠ ⁠⁠ ⁠ \nAs we already…</td>
+      <td>23</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>th</td>
+      <td>None</td>
+      <td>RT @mthai: เกมส์ยัง​ไม่จบ... ต่อเวลาพิเศษ​ 30  นาที\n\nโครเอเชีย​ 🇭🇷       1  :   1         🏴󠁧󠁢󠁥󠁮󠁧󠁿​ อังกฤษ​\n เปริซิช  68'              ⚽…</td>
+      <td>47</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>en</td>
+      <td>None</td>
+      <td>William made an England flag at nursery today. I hope he gets the need for it on Sunday. #ENGvCRO… https://t.co/Cjf76wWtPG</td>
+      <td>20</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>en</td>
+      <td>None</td>
+      <td>This is why england can never win d world cup again argue with ur ancestors #ENGCRO</td>
+      <td>16</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>en</td>
+      <td>None</td>
+      <td>RT @PurelyFootball: Hyde Park when Kieran Trippier scored for England🏴󠁧󠁢󠁥󠁮󠁧󠁿\n\nAbsolute scenes!🍻 https://t.co/SLb6dFcG0g</td>
+      <td>12</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>en</td>
+      <td>None</td>
+      <td>Honestly? I’m ashamed about the protests in England... I’m ashamed we aren’t as organized and doing as much protest… https://t.co/JBLcWtfgsX</td>
+      <td>20</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h2>Punctuation removal</h2>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">string</span>
+<span class="n">df</span><span class="p">[</span><span class="s1">&#39;no_punctuation&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;text&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;[^\w\s]&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+
+
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>lang</th>
+      <th>place</th>
+      <th>text</th>
+      <th>word_count</th>
+      <th>no_punctuation</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>en</td>
+      <td>None</td>
+      <td>This. https://t.co/UNKep8L5EY</td>
+      <td>2</td>
+      <td>This httpstcoUNKep8L5EY</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>en</td>
+      <td>None</td>
+      <td>Wanna see England in the final but Croatia is clearly the better side\n\n#ENGCRO #WorldCup</td>
+      <td>14</td>
+      <td>Wanna see England in the final but Croatia is clearly the better side\n\nENGCRO WorldCup</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>en</td>
+      <td>None</td>
+      <td>C’mon #England we really can do this. Dig deep. #EnglandvsCroatia #ThreeLionsOnAShirt</td>
+      <td>11</td>
+      <td>Cmon England we really can do this Dig deep EnglandvsCroatia ThreeLionsOnAShirt</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>en</td>
+      <td>None</td>
+      <td>RT @FlickSaudi: If England lose This is How The Streets Of London Will Look https://t.co/V8AT2RRn5p</td>
+      <td>15</td>
+      <td>RT FlickSaudi If England lose This is How The Streets Of London Will Look httpstcoV8AT2RRn5p</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>en</td>
+      <td>None</td>
+      <td>RT @hermannkelly: .@TonightShowTV3 I’m into the breach on the TV3 Tonight Show, Wednesday 11th July at 11pm. #WorldCup⁠ ⁠⁠ ⁠ \nAs we already…</td>
+      <td>23</td>
+      <td>RT hermannkelly TonightShowTV3 Im into the breach on the TV3 Tonight Show Wednesday 11th July at 11pm WorldCup   \nAs we already</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">bs4</span> <span class="kn">import</span> <span class="n">BeautifulSoup</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">nltk.tokenize</span> <span class="kn">import</span> <span class="n">WordPunctTokenizer</span>
+<span class="n">tok</span> <span class="o">=</span> <span class="n">WordPunctTokenizer</span><span class="p">()</span>
+<span class="n">pat1</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;@[A-Za-z0-9]+&#39;</span>
+<span class="n">pat2</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;https?://[A-Za-z0-9./]+&#39;</span>
+<span class="n">combined_pat</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;|&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">((</span><span class="n">pat1</span><span class="p">,</span> <span class="n">pat2</span><span class="p">))</span>
+
+
+
+<span class="k">def</span> <span class="nf">tweet_cleaner</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+    <span class="n">soup</span> <span class="o">=</span> <span class="n">BeautifulSoup</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="s1">&#39;lxml&#39;</span><span class="p">)</span>
+    <span class="n">souped</span> <span class="o">=</span> <span class="n">soup</span><span class="o">.</span><span class="n">get_text</span><span class="p">()</span>
+    <span class="n">stripped</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">combined_pat</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">souped</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">clean</span> <span class="o">=</span> <span class="n">stripped</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">&quot;utf-8-sig&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="sa">u</span><span class="s2">&quot;</span><span class="se">\ufffd</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;?&quot;</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">clean</span> <span class="o">=</span> <span class="n">stripped</span>
+        <span class="n">letters_only</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s2">&quot;[^a-zA-Z]&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="n">clean</span><span class="p">)</span>
+        <span class="n">lower_case</span> <span class="o">=</span> <span class="n">letters_only</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="c1"># During the letters_only process two lines above, it has created unnecessay white spaces,</span>
+    <span class="c1"># I will tokenize and join together to remove unneccessary white spaces</span>
+        <span class="n">words</span> <span class="o">=</span> <span class="n">tok</span><span class="o">.</span><span class="n">tokenize</span><span class="p">(</span><span class="n">lower_case</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">words</span><span class="p">))</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+
+<span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">tweet</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">text</span><span class="p">:</span>
+    <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tweet_cleaner</span><span class="p">(</span><span class="n">tweet</span><span class="p">))</span>
+
+<span class="n">df</span><span class="p">[</span><span class="s1">&#39;cleaned&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
+
+<span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+</pre></div>
+
+
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>lang</th>
+      <th>place</th>
+      <th>text</th>
+      <th>word_count</th>
+      <th>no_punctuation</th>
+      <th>cleaned</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>en</td>
+      <td>None</td>
+      <td>This. https://t.co/UNKep8L5EY</td>
+      <td>2</td>
+      <td>This httpstcoUNKep8L5EY</td>
+      <td>this</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>en</td>
+      <td>None</td>
+      <td>Wanna see England in the final but Croatia is clearly the better side\n\n#ENGCRO #WorldCup</td>
+      <td>14</td>
+      <td>Wanna see England in the final but Croatia is clearly the better side\n\nENGCRO WorldCup</td>
+      <td>wanna see england in the final but croatia is clearly the better side engcro worldcup</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>en</td>
+      <td>None</td>
+      <td>C’mon #England we really can do this. Dig deep. #EnglandvsCroatia #ThreeLionsOnAShirt</td>
+      <td>11</td>
+      <td>Cmon England we really can do this Dig deep EnglandvsCroatia ThreeLionsOnAShirt</td>
+      <td>c mon england we really can do this dig deep englandvscroatia threelionsonashirt</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>en</td>
+      <td>None</td>
+      <td>RT @FlickSaudi: If England lose This is How The Streets Of London Will Look https://t.co/V8AT2RRn5p</td>
+      <td>15</td>
+      <td>RT FlickSaudi If England lose This is How The Streets Of London Will Look httpstcoV8AT2RRn5p</td>
+      <td>rt if england lose this is how the streets of london will look</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>en</td>
+      <td>None</td>
+      <td>RT @hermannkelly: .@TonightShowTV3 I’m into the breach on the TV3 Tonight Show, Wednesday 11th July at 11pm. #WorldCup⁠ ⁠⁠ ⁠ \nAs we already…</td>
+      <td>23</td>
+      <td>RT hermannkelly TonightShowTV3 Im into the breach on the TV3 Tonight Show Wednesday 11th July at 11pm WorldCup   \nAs we already</td>
+      <td>rt i m into the breach on the tv tonight show wednesday th july at pm worldcup as we already</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>th</td>
+      <td>None</td>
+      <td>RT @mthai: เกมส์ยัง​ไม่จบ... ต่อเวลาพิเศษ​ 30  นาที\n\nโครเอเชีย​ 🇭🇷       1  :   1         🏴󠁧󠁢󠁥󠁮󠁧󠁿​ อังกฤษ​\n เปริซิช  68'              ⚽…</td>
+      <td>47</td>
+      <td>RT mthai เกมสยงไมจบ ตอเวลาพเศษ 30  นาท\n\nโครเอเชย        1     1          องกฤษ\n เปรซช  68</td>
+      <td>rt</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>en</td>
+      <td>None</td>
+      <td>William made an England flag at nursery today. I hope he gets the need for it on Sunday. #ENGvCRO… https://t.co/Cjf76wWtPG</td>
+      <td>20</td>
+      <td>William made an England flag at nursery today I hope he gets the need for it on Sunday ENGvCRO httpstcoCjf76wWtPG</td>
+      <td>william made an england flag at nursery today i hope he gets the need for it on sunday engvcro</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>en</td>
+      <td>None</td>
+      <td>This is why england can never win d world cup again argue with ur ancestors #ENGCRO</td>
+      <td>16</td>
+      <td>This is why england can never win d world cup again argue with ur ancestors ENGCRO</td>
+      <td>this is why england can never win d world cup again argue with ur ancestors engcro</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>en</td>
+      <td>None</td>
+      <td>RT @PurelyFootball: Hyde Park when Kieran Trippier scored for England🏴󠁧󠁢󠁥󠁮󠁧󠁿\n\nAbsolute scenes!🍻 https://t.co/SLb6dFcG0g</td>
+      <td>12</td>
+      <td>RT PurelyFootball Hyde Park when Kieran Trippier scored for England\n\nAbsolute scenes httpstcoSLb6dFcG0g</td>
+      <td>rt hyde park when kieran trippier scored for england absolute scenes</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>en</td>
+      <td>None</td>
+      <td>Honestly? I’m ashamed about the protests in England... I’m ashamed we aren’t as organized and doing as much protest… https://t.co/JBLcWtfgsX</td>
+      <td>20</td>
+      <td>Honestly Im ashamed about the protests in England Im ashamed we arent as organized and doing as much protest httpstcoJBLcWtfgsX</td>
+      <td>honestly i m ashamed about the protests in england i m ashamed we aren t as organized and doing as much protest</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>en</td>
+      <td>None</td>
+      <td>RT @SavageLord10: Snap back thou  this an old video guyz help me go viral tag @Aylo_SA @tloucolt @shelm_eric @flickice #imsorrychallenge #M…</td>
+      <td>22</td>
+      <td>RT SavageLord10 Snap back thou  this an old video guyz help me go viral tag Aylo_SA tloucolt shelm_eric flickice imsorrychallenge M</td>
+      <td>rt snap back thou this an old video guyz help me go viral tag sa eric imsorrychallenge m</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>en</td>
+      <td>None</td>
+      <td>RT @petertimmins3: If Croatia win by cheating tonight, I expect at least 17million people to respect the result. Especially you, @JuliaHB1</td>
+      <td>21</td>
+      <td>RT petertimmins3 If Croatia win by cheating tonight I expect at least 17million people to respect the result Especially you JuliaHB1</td>
+      <td>rt if croatia win by cheating tonight i expect at least million people to respect the result especially you</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>en</td>
+      <td>None</td>
+      <td>RT @KEEMSTAR: England wins \n\nI saw it in a dream</td>
+      <td>10</td>
+      <td>RT KEEMSTAR England wins \n\nI saw it in a dream</td>
+      <td>rt england wins i saw it in a dream</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>en</td>
+      <td>None</td>
+      <td>We’re going a bit Spursy here England 🙈</td>
+      <td>8</td>
+      <td>Were going a bit Spursy here England</td>
+      <td>we re going a bit spursy here england</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>en</td>
+      <td>None</td>
+      <td>RT @Predictionhq: correct score 1-1✔️\nCroatia over 0.5 Team Goals ✔️\nCroatia over 3.5 corners ✔️\nOver 1.5 FT goals \n100% Record https://t.c…</td>
+      <td>20</td>
+      <td>RT Predictionhq correct score 11\nCroatia over 05 Team Goals \nCroatia over 35 corners \nOver 15 FT goals \n100 Record httpstc</td>
+      <td>rt correct score croatia over team goals croatia over corners over ft goals record</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>en</td>
+      <td>None</td>
+      <td>RT @alexandramusic: Literally can’t cope. COME ON ENGLAND !!! 🏴󠁧󠁢󠁥󠁮󠁧󠁿</td>
+      <td>10</td>
+      <td>RT alexandramusic Literally cant cope COME ON ENGLAND</td>
+      <td>rt literally can t cope come on england</td>
+    </tr>
+    <tr>
+      <th>16</th>
+      <td>en</td>
+      <td>None</td>
+      <td>Genuinely feel sick right now #ENGCRO #WorldCup</td>
+      <td>7</td>
+      <td>Genuinely feel sick right now ENGCRO WorldCup</td>
+      <td>genuinely feel sick right now engcro worldcup</td>
+    </tr>
+    <tr>
+      <th>17</th>
+      <td>en</td>
+      <td>None</td>
+      <td>Okay the pace seems to be slightly better for #ENGCRO - not sure it's going to be enough at this stage though. Typi… https://t.co/CXsEmkrss4</td>
+      <td>24</td>
+      <td>Okay the pace seems to be slightly better for ENGCRO  not sure its going to be enough at this stage though Typi httpstcoCXsEmkrss4</td>
+      <td>okay the pace seems to be slightly better for engcro not sure it s going to be enough at this stage though typi</td>
+    </tr>
+    <tr>
+      <th>18</th>
+      <td>en</td>
+      <td>None</td>
+      <td>Ok extra time let’s wrap this up and return England to their natural state; moaning into their pints… https://t.co/8qQLHyjHxN</td>
+      <td>19</td>
+      <td>Ok extra time lets wrap this up and return England to their natural state moaning into their pints httpstco8qQLHyjHxN</td>
+      <td>ok extra time let s wrap this up and return england to their natural state moaning into their pints</td>
+    </tr>
+    <tr>
+      <th>19</th>
+      <td>en</td>
+      <td>None</td>
+      <td>I’d love some sideline reporting from @BarstoolBigCat in the next World Cup</td>
+      <td>12</td>
+      <td>Id love some sideline reporting from BarstoolBigCat in the next World Cup</td>
+      <td>i d love some sideline reporting from in the next world cup</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h2>Stopwords Removal</h2>
+<div class="highlight"><pre><span></span><span class="c1">#stop = set(stopwords.words(&#39;english&#39;))</span>
+<span class="c1">#df[&#39;final&#39;] = df[&#39;cleaned&#39;].apply(lambda x: [item for item in x if item not in stop])</span>
+<span class="c1">#df[&#39;text&#39;].apply(lambda x: [item for item in x if item not in stop])</span>
+</pre></div>
+
+
+<h2>Sentiment Analysis</h2>
+<p>Using Textblob.sentiment to detect the sentiment of the cleaned tweet.  This returns a tuple of polarity and subjectivity.  The polarity is indicative of the sentiment, a positive sentiment will have a value closer to 1 while a negative sentiment will be closer to -1.  </p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">textblob</span> <span class="kn">import</span> <span class="n">TextBlob</span>
+<span class="n">train</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">cleaned</span><span class="p">[:</span><span class="mi">100</span><span class="p">]</span>
+<span class="c1">#classifier = NaiveBayesClassifier(train, format=None)</span>
+
+<span class="c1">#train.apply(lambda x: TextBlob(x).sentiment)</span>
+
+<span class="n">df</span><span class="p">[</span><span class="s1">&#39;sentiment&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;cleaned&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">TextBlob</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">sentiment</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;positive&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;sentiment&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span>
+<span class="n">df</span><span class="p">[</span><span class="s1">&#39;negative&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;sentiment&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span>
+<span class="n">df</span><span class="p">[</span><span class="s1">&#39;neutral&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;sentiment&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span>
+
+<span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Negative&#39;</span><span class="p">,</span><span class="s1">&#39;Postive&#39;</span><span class="p">,</span><span class="s1">&#39;Neutral&#39;</span><span class="p">]</span>
+
+<span class="n">df_summary</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;negative&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;positive&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;neutral&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()],</span> <span class="n">index</span><span class="o">=</span><span class="n">labels</span><span class="p">)</span>
+<span class="n">df_summary</span>
+</pre></div>
+
+
+<div>
+<style>
+    .dataframe thead tr:only-child th {
+        text-align: right;
+    }
+
+    .dataframe thead th {
+        text-align: left;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Negative</th>
+      <td>47</td>
+    </tr>
+    <tr>
+      <th>Postive</th>
+      <td>124</td>
+    </tr>
+    <tr>
+      <th>Neutral</th>
+      <td>205</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="o">%</span><span class="n">matplotlib</span> <span class="n">inline</span>
+<span class="n">fig_size</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s2">&quot;figure.figsize&quot;</span><span class="p">]</span>
+<span class="n">fig_size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">12</span>
+<span class="n">fig_size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">9</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s2">&quot;figure.figsize&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fig_size</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="n">df_summary</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s1">&#39;bar&#39;</span><span class="p">);</span>
+</pre></div>
+
+
+<p><img alt="png" src="output_20_0.png"></p>
+<div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gcf</span><span class="p">()</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">set_size_inches</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">9</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;sentiment&#39;</span><span class="p">]);</span>
+</pre></div>
+
+
+<p><img alt="png" src="output_21_0.png"></p>                </article>
 <p class="paginator">
     Page 1 / 1
 </p>
@@ -126,7 +664,7 @@
                         <ul>
                             <li><a href="http://getpelican.com/">Pelican</a></li>
                             <li><a href="http://python.org/">Python.org</a></li>
-                            <li><a href="http://jinja.pocoo.org/">Jinja2</a></li>
+                            <li><a href="https://wcontractor.github.io/resume/Wahid_Contractor_Resume.pdf">Resume</a></li>
                         </ul>
                 </div><!-- /.blogroll -->
                 <div class="social">
