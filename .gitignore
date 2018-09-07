@@ -7,3 +7,4 @@ develop_server.sh
 publishconf.py
 fabfile.py
 pelicanconf.py
+content/
