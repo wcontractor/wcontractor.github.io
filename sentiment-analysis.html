@@ -14,8 +14,7 @@
         <header id="banner" class="body">
                 <h1><a href="/">Wcontractor.github.io </a></h1>
                 <nav><ul>
-                    <li><a href="/category/python.html">Python</a></li>
-                    <li class="active"><a href="/category/python-misc.html">Python, misc</a></li>
+                    <li class="active"><a href="/category/python.html">Python</a></li>
                     <li><a href="/category/python-pelican-misc.html">Python, Pelican, misc</a></li>
                 </ul>
                 </nav>
@@ -30,10 +29,11 @@
 
     <div class="entry-content">
 <footer class="post-info">
-        <span>Wed 18 July 2018</span>
-<span>| tags: <a href="/tag/python.html">Python</a><a href="/tag/pandas.html">Pandas</a><a href="/tag/matplotlib.html">Matplotlib</a><a href="/tag/nlp.html">NLP</a></span>
+        <span>Fri 10 August 2018</span>
+<span>| tags: <a href="/tag/python.html">Python</a><a href="/tag/nlp.html">NLP</a><a href="/tag/pandas.html">Pandas</a><a href="/tag/matplotlib.html">Matplotlib</a></span>
 </footer><!-- /.post-info -->      <h2>Background</h2>
-<p>Normally I open these posts with some background about what I'm trying to accomplish, some perspective about my thought process as I worked through the problem, and just a little bit about the why.  I have been away for some time though, It was my intention to work through a mini-project at least once a month and turn that into a post. It has been some time since my last post. Life has taken over, my wife and I have a 6 month old baby girl and she keeps us very busy. However, my passion for learning, building, and creating </p>
+<p>Sentiment Analysis is a topic that has fascinated me for some time. Examples like the analysis of @realDonaldTrump to classify tweets as positive or negative captivated me.  To perform my own analysis, very simply, I data collected tweets during the England V Croatia World Cup Semi-Final game and proceeded through the steps of pre-processing, processing, sentiment analysis.  </p>
+<p>The tweets were collected through by a Python script I ran on a AWS instance.  I used the tweepy api to collect 376 records in a JSON file and then used that for the following steps.</p>
 <div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">json</span><span class="o">,</span> <span class="nn">pprint</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
 </pre></div>
@@ -656,7 +656,32 @@ dtype: object
 </pre></div>
 
 
-<p><img alt="png" src="output_21_0.png"></p>
+<p><img alt="png" src="output_21.png"></p>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">wordcloud</span> <span class="kn">import</span> <span class="n">WordCloud</span><span class="p">,</span> <span class="n">STOPWORDS</span>
+
+<span class="n">stopwords</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">STOPWORDS</span><span class="p">)</span>
+<span class="n">wordcloud</span> <span class="o">=</span> <span class="n">WordCloud</span><span class="p">(</span>
+                          <span class="n">background_color</span><span class="o">=</span><span class="s1">&#39;white&#39;</span><span class="p">,</span>
+                          <span class="n">stopwords</span><span class="o">=</span><span class="n">stopwords</span><span class="p">,</span>
+                          <span class="n">max_words</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
+                          <span class="n">max_font_size</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> 
+                          <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span>
+                         <span class="p">)</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;cleaned&#39;</span><span class="p">]))</span>
+
+
+<span class="k">print</span><span class="p">(</span><span class="n">wordcloud</span><span class="p">)</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">wordcloud</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">();</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>&lt;wordcloud.wordcloud.WordCloud object at 0x111d36be0&gt;
+</pre></div>
+
+
+<p><img alt="png" src="output_22_1.png"></p>
     </div><!-- /.entry-content -->
 
   </article>

@@ -1,14 +1,16 @@
-Title:World Cup Tweet Sentiment Analysis
-Date:2018-07-18 10:20
-Modified:2018-07-18 19:30
-Category:Python, misc
-Tags:Python, Pandas, Matplotlib, NLP
-Slug:sentiment-analysis
-Authors:Wahid Contractor
-Summary:Sentiment Analysis of World Cup Tweets During England VS. Croatia
+Title: World Cup Tweet Sentiment Analysis
+Slug: sentiment-analysis
+Date: 2018-08-10 19:17 
+Modified: 2018-08-10 22:26
+Category: Python
+Tags: Python, NLP, Pandas, Matplotlib
+Author: Wahid Contractor
+Summary: A brief walkthrough of an analysis of World Cup Tweets
 ## Background
 
-Normally I open these posts with some background about what I'm trying to accomplish, some perspective about my thought process as I worked through the problem, and just a little bit about the why.  I have been away for some time though, It was my intention to work through a mini-project at least once a month and turn that into a post. It has been some time since my last post. Life has taken over, my wife and I have a 6 month old baby girl and she keeps us very busy. However, my passion for learning, building, and creating 
+Sentiment Analysis is a topic that has fascinated me for some time. Examples like the analysis of @realDonaldTrump to classify tweets as positive or negative captivated me.  To perform my own analysis, very simply, I data collected tweets during the England V Croatia World Cup Semi-Final game and proceeded through the steps of pre-processing, processing, sentiment analysis.  
+
+The tweets were collected through by a Python script I ran on a AWS instance.  I used the tweepy api to collect 376 records in a JSON file and then used that for the following steps.
 
 
 ```python
@@ -696,5 +698,33 @@ plt.scatter(df.index.values, df['sentiment']);
 ```
 
 
-![png](output_21_0.png)
+![png](output_21.png)
+
+
+
+```python
+from wordcloud import WordCloud, STOPWORDS
+
+stopwords = set(STOPWORDS)
+wordcloud = WordCloud(
+                          background_color='white',
+                          stopwords=stopwords,
+                          max_words=200,
+                          max_font_size=40, 
+                          random_state=42
+                         ).generate(str(df['cleaned']))
+
+
+print(wordcloud)
+fig = plt.figure(1)
+plt.imshow(wordcloud)
+plt.axis('off')
+plt.show();
+```
+
+    <wordcloud.wordcloud.WordCloud object at 0x111d36be0>
+
+
+
+![png](output_22_1.png)
 
