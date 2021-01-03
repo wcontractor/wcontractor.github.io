@@ -35,7 +35,7 @@
 <p>Sentiment Analysis is a topic that has fascinated me for some time. Examples like the analysis of @realDonaldTrump to classify tweets as positive or negative captivated me.  To perform my own analysis, very simply, I data collected tweets during the England V Croatia World Cup Semi-Final game and proceeded through the steps of pre-processing, processing, sentiment analysis.  </p>
 <p>The tweets were collected through by a Python script I ran on a AWS instance.  I used the tweepy api to collect 376 records in a JSON file and then used that for the following steps.</p>
 <div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">json</span><span class="o">,</span> <span class="nn">pprint</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 </pre></div>
 
 
@@ -60,33 +60,33 @@
 </pre></div>
 
 
-<div class="highlight"><pre><span></span>376
+<div class="highlight"><pre><span></span><span class="err">376</span>
 </pre></div>
 
 
 <div class="highlight"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">tweet_data</span><span class="p">)</span>
-<span class="k">print</span><span class="p">(</span><span class="s1">&#39;There are&#39;</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39; rows and&#39;</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39; columns in this dataset&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;There are&#39;</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39; rows and&#39;</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39; columns in this dataset&#39;</span><span class="p">)</span>
 <span class="n">df</span><span class="o">.</span><span class="n">columns</span>
 </pre></div>
 
 
-<div class="highlight"><pre><span></span>There are 376  rows and 37  columns in this dataset
+<div class="highlight"><pre><span></span><span class="n">There</span> <span class="k">are</span> <span class="mi">376</span>  <span class="k">rows</span> <span class="k">and</span> <span class="mi">37</span>  <span class="n">columns</span> <span class="k">in</span> <span class="n">this</span> <span class="n">dataset</span>
 
 
 
 
 
-Index([&#39;contributors&#39;, &#39;coordinates&#39;, &#39;created_at&#39;, &#39;display_text_range&#39;,
-       &#39;entities&#39;, &#39;extended_entities&#39;, &#39;extended_tweet&#39;, &#39;favorite_count&#39;,
-       &#39;favorited&#39;, &#39;filter_level&#39;, &#39;geo&#39;, &#39;id&#39;, &#39;id_str&#39;,
-       &#39;in_reply_to_screen_name&#39;, &#39;in_reply_to_status_id&#39;,
-       &#39;in_reply_to_status_id_str&#39;, &#39;in_reply_to_user_id&#39;,
-       &#39;in_reply_to_user_id_str&#39;, &#39;is_quote_status&#39;, &#39;lang&#39;, &#39;limit&#39;, &#39;place&#39;,
-       &#39;possibly_sensitive&#39;, &#39;quote_count&#39;, &#39;quoted_status&#39;,
-       &#39;quoted_status_id&#39;, &#39;quoted_status_id_str&#39;, &#39;quoted_status_permalink&#39;,
-       &#39;reply_count&#39;, &#39;retweet_count&#39;, &#39;retweeted&#39;, &#39;retweeted_status&#39;,
-       &#39;source&#39;, &#39;text&#39;, &#39;timestamp_ms&#39;, &#39;truncated&#39;, &#39;user&#39;],
-      dtype=&#39;object&#39;)
+<span class="k">Index</span><span class="p">([</span><span class="s1">&#39;contributors&#39;</span><span class="p">,</span> <span class="s1">&#39;coordinates&#39;</span><span class="p">,</span> <span class="s1">&#39;created_at&#39;</span><span class="p">,</span> <span class="s1">&#39;display_text_range&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;entities&#39;</span><span class="p">,</span> <span class="s1">&#39;extended_entities&#39;</span><span class="p">,</span> <span class="s1">&#39;extended_tweet&#39;</span><span class="p">,</span> <span class="s1">&#39;favorite_count&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;favorited&#39;</span><span class="p">,</span> <span class="s1">&#39;filter_level&#39;</span><span class="p">,</span> <span class="s1">&#39;geo&#39;</span><span class="p">,</span> <span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;id_str&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;in_reply_to_screen_name&#39;</span><span class="p">,</span> <span class="s1">&#39;in_reply_to_status_id&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;in_reply_to_status_id_str&#39;</span><span class="p">,</span> <span class="s1">&#39;in_reply_to_user_id&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;in_reply_to_user_id_str&#39;</span><span class="p">,</span> <span class="s1">&#39;is_quote_status&#39;</span><span class="p">,</span> <span class="s1">&#39;lang&#39;</span><span class="p">,</span> <span class="s1">&#39;limit&#39;</span><span class="p">,</span> <span class="s1">&#39;place&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;possibly_sensitive&#39;</span><span class="p">,</span> <span class="s1">&#39;quote_count&#39;</span><span class="p">,</span> <span class="s1">&#39;quoted_status&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;quoted_status_id&#39;</span><span class="p">,</span> <span class="s1">&#39;quoted_status_id_str&#39;</span><span class="p">,</span> <span class="s1">&#39;quoted_status_permalink&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;reply_count&#39;</span><span class="p">,</span> <span class="s1">&#39;retweet_count&#39;</span><span class="p">,</span> <span class="s1">&#39;retweeted&#39;</span><span class="p">,</span> <span class="s1">&#39;retweeted_status&#39;</span><span class="p">,</span>
+       <span class="s1">&#39;source&#39;</span><span class="p">,</span> <span class="s1">&#39;text&#39;</span><span class="p">,</span> <span class="s1">&#39;timestamp_ms&#39;</span><span class="p">,</span> <span class="s1">&#39;truncated&#39;</span><span class="p">,</span> <span class="s1">&#39;user&#39;</span><span class="p">],</span>
+      <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;object&#39;</span><span class="p">)</span>
 </pre></div>
 
 
@@ -101,12 +101,12 @@ Index([&#39;contributors&#39;, &#39;coordinates&#39;, &#39;created_at&#39;, &#39
        <span class="s1">&#39;possibly_sensitive&#39;</span><span class="p">,</span> <span class="s1">&#39;quote_count&#39;</span><span class="p">,</span> <span class="s1">&#39;quoted_status&#39;</span><span class="p">,</span>
        <span class="s1">&#39;quoted_status_id&#39;</span><span class="p">,</span> <span class="s1">&#39;quoted_status_id_str&#39;</span><span class="p">,</span> <span class="s1">&#39;quoted_status_permalink&#39;</span><span class="p">,</span>
        <span class="s1">&#39;reply_count&#39;</span><span class="p">,</span> <span class="s1">&#39;retweet_count&#39;</span><span class="p">,</span> <span class="s1">&#39;retweeted&#39;</span><span class="p">,</span> <span class="s1">&#39;retweeted_status&#39;</span><span class="p">,</span>
-       <span class="s1">&#39;source&#39;</span><span class="p">,</span><span class="s1">&#39;timestamp_ms&#39;</span><span class="p">,</span> <span class="s1">&#39;truncated&#39;</span><span class="p">,</span> <span class="s1">&#39;user&#39;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+       <span class="s1">&#39;source&#39;</span><span class="p">,</span><span class="s1">&#39;timestamp_ms&#39;</span><span class="p">,</span> <span class="s1">&#39;truncated&#39;</span><span class="p">,</span> <span class="s1">&#39;user&#39;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">df</span><span class="o">.</span><span class="n">shape</span>
 </pre></div>
 
 
-<div class="highlight"><pre><span></span>(376, 3)
+<div class="highlight"><pre><span></span><span class="err">(376, 3)</span>
 </pre></div>
 
 
@@ -114,21 +114,21 @@ Index([&#39;contributors&#39;, &#39;coordinates&#39;, &#39;created_at&#39;, &#39
 </pre></div>
 
 
-<div class="highlight"><pre><span></span>lang     object
-place    object
-text     object
-dtype: object
+<div class="highlight"><pre><span></span><span class="err">lang     object</span>
+<span class="err">place    object</span>
+<span class="err">text     object</span>
+<span class="c">dtype: object</span>
 </pre></div>
 
 
 <h1>Fill in NAN's</h1>
 <p>There are rows where the text value is NAN and that is causing the pre-processing steps to error with a data type error.  Perhaps I could have filtered them out, but I chose to use fillna to fill them in with spaces.  </p>
-<div class="highlight"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">df</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">dtype</span>
 </pre></div>
 
 
-<div class="highlight"><pre><span></span>dtype(&#39;O&#39;)
+<div class="highlight"><pre><span></span><span class="err">dtype(&#39;O&#39;)</span>
 </pre></div>
 
 
@@ -669,7 +669,7 @@ dtype: object
                          <span class="p">)</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;cleaned&#39;</span><span class="p">]))</span>
 
 
-<span class="k">print</span><span class="p">(</span><span class="n">wordcloud</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">wordcloud</span><span class="p">)</span>
 <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">wordcloud</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
@@ -677,7 +677,7 @@ dtype: object
 </pre></div>
 
 
-<div class="highlight"><pre><span></span>&lt;wordcloud.wordcloud.WordCloud object at 0x111d36be0&gt;
+<div class="highlight"><pre><span></span><span class="err">&lt;wordcloud.wordcloud.WordCloud object at 0x111d36be0&gt;</span>
 </pre></div>
 
 

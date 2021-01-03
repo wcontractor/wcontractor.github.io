@@ -37,14 +37,14 @@
 <p>For context I used the Yelp Fusion API to peform a business search for term of 'halal'.  Now by no means am I an expert on this topic, but the word halal mean permissable to eat and my wife and I frequent these restaurants so I thought it would be interesting to map those locations near our house.</p>
 <div class="highlight"><pre><span></span><span class="c1">#imports using json, gmaps, and pandas</span>
 <span class="kn">import</span> <span class="nn">json</span><span class="o">,</span> <span class="nn">gmaps</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 </pre></div>
 
 
 <h2>Load Data</h2>
 <p>Admittedly to get the data from the Yelp API I used Postman instead of interfacing with the API directly.  This was just faster to get a JSON file of the results I was looking for.  To do this you need to create an app and get an API Key from Yelps Developer website.  I saved the results from Postman into a text file and then worked with that file from there.</p>
-<div class="highlight"><pre><span></span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;Yelp_Halal_Businesses.JSON&quot;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="nb">file</span><span class="p">:</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="nb">file</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+<div class="highlight"><pre><span></span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;Yelp_Halal_Businesses.JSON&quot;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
 
 <span class="n">json_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 </pre></div>
@@ -53,36 +53,36 @@
 <h2>Get Locations</h2>
 <p>In the cell below I iterate over the items in json_data and create 2 lists that store that latitude and longitude.  I then zip those 2 lists together to create 1 so that I can pass the coordinates of the halal restaurants to gmaps.</p>
 <div class="highlight"><pre><span></span><span class="n">lat</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="nb">long</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">long</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">json_data</span><span class="p">[</span><span class="s1">&#39;businesses&#39;</span><span class="p">]:</span>
     <span class="n">lat</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s1">&#39;coordinates&#39;</span><span class="p">][</span><span class="s1">&#39;latitude&#39;</span><span class="p">])</span>
-    <span class="nb">long</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s1">&#39;coordinates&#39;</span><span class="p">][</span><span class="s1">&#39;longitude&#39;</span><span class="p">])</span>
+    <span class="n">long</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s1">&#39;coordinates&#39;</span><span class="p">][</span><span class="s1">&#39;longitude&#39;</span><span class="p">])</span>
 
-<span class="n">lat_long</span> <span class="o">=</span> <span class="nb">list</span><span class="p">((</span><span class="nb">zip</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span><span class="nb">long</span><span class="p">)))</span>
+<span class="n">lat_long</span> <span class="o">=</span> <span class="nb">list</span><span class="p">((</span><span class="nb">zip</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span><span class="n">long</span><span class="p">)))</span>
 <span class="n">lat_long</span>
 </pre></div>
 
 
-<div class="highlight"><pre><span></span>[(40.56378, -74.694418),
- (40.5661650002003, -74.6275533735752),
- (40.55492, -74.52609),
- (40.5036928033583, -74.6444269892345),
- (40.62008, -74.49021),
- (40.55527, -74.52661),
- (40.598919, -74.480728),
- (40.437622, -74.538564),
- (40.6171176417404, -74.494637063977),
- (40.61933, -74.4927699),
- (40.4340821413289, -74.5478186003373),
- (40.62008, -74.49021),
- (40.4473744, -74.4966087),
- (40.4974297303228, -74.4482234326057),
- (40.4379627796526, -74.5361950967858),
- (40.5104061, -74.409281),
- (40.4345526013837, -74.5460039343956),
- (40.4977595713994, -74.4490539963252),
- (40.5721031, -74.3360702),
- (40.4992091, -74.4272637)]
+<div class="highlight"><pre><span></span><span class="err">[(40.56378, -74.694418),</span>
+<span class="err"> (40.5661650002003, -74.6275533735752),</span>
+<span class="err"> (40.55492, -74.52609),</span>
+<span class="err"> (40.5036928033583, -74.6444269892345),</span>
+<span class="err"> (40.62008, -74.49021),</span>
+<span class="err"> (40.55527, -74.52661),</span>
+<span class="err"> (40.598919, -74.480728),</span>
+<span class="err"> (40.437622, -74.538564),</span>
+<span class="err"> (40.6171176417404, -74.494637063977),</span>
+<span class="err"> (40.61933, -74.4927699),</span>
+<span class="err"> (40.4340821413289, -74.5478186003373),</span>
+<span class="err"> (40.62008, -74.49021),</span>
+<span class="err"> (40.4473744, -74.4966087),</span>
+<span class="err"> (40.4974297303228, -74.4482234326057),</span>
+<span class="err"> (40.4379627796526, -74.5361950967858),</span>
+<span class="err"> (40.5104061, -74.409281),</span>
+<span class="err"> (40.4345526013837, -74.5460039343956),</span>
+<span class="err"> (40.4977595713994, -74.4490539963252),</span>
+<span class="err"> (40.5721031, -74.3360702),</span>
+<span class="err"> (40.4992091, -74.4272637)]</span>
 </pre></div>
 
 
@@ -104,7 +104,7 @@
 </pre></div>
 
 
-<div class="highlight"><pre><span></span>A Jupyter Widget
+<div class="highlight"><pre><span></span><span class="err">A Jupyter Widget</span>
 </pre></div>
 
 
@@ -139,10 +139,10 @@
 </pre></div>
 
 
-<div class="highlight"><pre><span></span>Index([&#39;categories&#39;, &#39;coordinates&#39;, &#39;display_phone&#39;, &#39;distance&#39;, &#39;id&#39;,
-       &#39;image_url&#39;, &#39;is_closed&#39;, &#39;location&#39;, &#39;name&#39;, &#39;phone&#39;, &#39;price&#39;,
-       &#39;rating&#39;, &#39;review_count&#39;, &#39;transactions&#39;, &#39;url&#39;],
-      dtype=&#39;object&#39;)
+<div class="highlight"><pre><span></span><span class="err">Index([&#39;categories&#39;, &#39;coordinates&#39;, &#39;display_phone&#39;, &#39;distance&#39;, &#39;id&#39;,</span>
+<span class="err">       &#39;image_url&#39;, &#39;is_closed&#39;, &#39;location&#39;, &#39;name&#39;, &#39;phone&#39;, &#39;price&#39;,</span>
+<span class="err">       &#39;rating&#39;, &#39;review_count&#39;, &#39;transactions&#39;, &#39;url&#39;],</span>
+<span class="err">      dtype=&#39;object&#39;)</span>
 </pre></div>
 
 

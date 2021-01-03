@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
         <meta charset="utf-8" />
-        <title>Wcontractor.github.io - Pelican</title>
+        <title>Pelican A Static Website Generator</title>
         <link rel="stylesheet" href="/theme/css/main.css" />
 
         <!--[if IE]>
@@ -14,19 +14,24 @@
         <header id="banner" class="body">
                 <h1><a href="/">Wcontractor.github.io </a></h1>
                 <nav><ul>
-                    <li><a href="/category/python.html">Python</a></li>
+                    <li class="active"><a href="/category/python.html">Python</a></li>
                     <li><a href="/category/python-pelican-misc.html">Python, Pelican, misc</a></li>
                 </ul>
                 </nav>
         </header><!-- /#banner -->
+<section id="content" class="body">
+  <article>
+    <header>
+      <h1 class="entry-title">
+        <a href="/pelican-document.html" rel="bookmark"
+           title="Permalink to Pelican A Static Website Generator">Pelican A Static Website Generator</a></h1>
+    </header>
 
-            <aside id="featured" class="body">
-                <article>
-                    <h1 class="entry-title"><a href="/pelican-document.html">Pelican A Static Website Generator</a></h1>
+    <div class="entry-content">
 <footer class="post-info">
         <span>Sun 03 January 2021</span>
 <span>| tags: <a href="/tag/python.html">Python</a><a href="/tag/learning.html">Learning</a><a href="/tag/pelican.html">Pelican</a></span>
-</footer><!-- /.post-info --><h1>Background</h1>
+</footer><!-- /.post-info -->      <h1>Background</h1>
 <p>The pages contained within this site are static pages that I have created over the years to catalog my projects and learning adventure.  Anyone with a toddler can understand how your priorities shift from personal development projects to changing diapers and cleaning up spit up.  Having said that, my daughter is awesome and I love watching her grow up.  However, it has been some time since my last post, and I have wanted to get back to this for some time. </p>
 <p>This will have a distinctly differnt flavor from the other posts here.  In the future I plan on resuming project based posts as I continue to learn about Python, Machine Learning, and Cloud offerrings from the various providers.  However,my goal here is to outline the tools and workflow for creating a post and publishing it to this <a href="http://wcontractor.github.io">site.</a>. </p>
 <h1>Pelican Overview</h1>
@@ -57,31 +62,11 @@
 <h1>Creating &amp; Previewing Content</h1>
 <p>To create content quickly you can use any Markdown editor.  Since many of my posts are related to Python are Notebooks themselves I am using Jupyter Notebooks saved as .MD files.  These get saved to the content folder of my site.  You can preview the content locally by running the server.</p>
 <p><code>python -m http.server</code></p>
-<p>This will start the server at http://0.0.0.0:8000 </p>                </article>
-            </aside><!-- /#featured -->
-                <section id="content" class="body">
-                    <h1>Other articles</h1>
-                    <ol id="posts-list" class="hfeed">
+<p>This will start the server at http://0.0.0.0:8000 </p>
+    </div><!-- /.entry-content -->
 
-            <li><article class="hentry">
-                <header>
-                    <h1><a href="/my-first-post.html" rel="bookmark"
-                           title="Permalink to My first pelican post">My first pelican post</a></h1>
-                </header>
-
-                <div class="entry-content">
-<footer class="post-info">
-        <span>Sat 30 September 2017</span>
-<span>| tags: <a href="/tag/pelican.html">pelican</a><a href="/tag/publishing.html">publishing</a><a href="/tag/misc.html">misc</a></span>
-</footer><!-- /.post-info -->                <p>Short version for index and feeds</p>
-                <a class="readmore" href="/my-first-post.html">read more</a>
-                </div><!-- /.entry-content -->
-            </article></li>
-            </ol><!-- /#posts-list -->
-<p class="paginator">
-    Page 1 / 1
-</p>
-            </section><!-- /#content -->
+  </article>
+</section>
         <section id="extras" class="body">
                 <div class="blogroll">
                         <h2>blogroll</h2>

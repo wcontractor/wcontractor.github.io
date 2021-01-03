@@ -34,8 +34,8 @@
 </footer><!-- /.post-info -->      <h2>Background</h2>
 <p>It has been some time since my last post.  Life has taken over, with an infant at home and a hectic work schedule it has been difficult to keep up with hobbies. The goal of this post is really to work through a problem and produce some simple vizualization.  I don't want too much dust to pile up.  </p>
 <div class="highlight"><pre><span></span><span class="c1">#imports</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">import</span> <span class="nn">urllib.request</span>
 <span class="o">%</span><span class="n">matplotlib</span> <span class="n">inline</span>
 </pre></div>
@@ -63,22 +63,22 @@
 </pre></div>
 
 
-<div class="highlight"><pre><span></span>WEO Subject Code      object
-Country               object
-Subject Descriptor    object
-Units                 object
-2010                  object
-2011                  object
-2012                  object
-2013                  object
-2014                  object
-2015                  object
-2016                  object
-2017                  object
-2018                  object
-2019                  object
-2020                  object
-dtype: object
+<div class="highlight"><pre><span></span><span class="err">WEO Subject Code      object</span>
+<span class="err">Country               object</span>
+<span class="err">Subject Descriptor    object</span>
+<span class="err">Units                 object</span>
+<span class="err">2010                  object</span>
+<span class="err">2011                  object</span>
+<span class="err">2012                  object</span>
+<span class="err">2013                  object</span>
+<span class="err">2014                  object</span>
+<span class="err">2015                  object</span>
+<span class="err">2016                  object</span>
+<span class="err">2017                  object</span>
+<span class="err">2018                  object</span>
+<span class="err">2019                  object</span>
+<span class="err">2020                  object</span>
+<span class="c">dtype: object</span>
 </pre></div>
 
 
@@ -93,7 +93,7 @@ dtype: object
 </pre></div>
 
 
-<div class="highlight"><pre><span></span>58008139678241.18
+<div class="highlight"><pre><span></span><span class="err">58008139678241.18</span>
 </pre></div>
 
 
@@ -109,11 +109,11 @@ dtype: object
 <span class="n">fig_size</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s2">&quot;figure.figsize&quot;</span><span class="p">]</span>
 
 <span class="c1"># Prints: [8.0, 6.0]</span>
-<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Current size:&quot;</span><span class="p">,</span> <span class="n">fig_size</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Current size:&quot;</span><span class="p">,</span> <span class="n">fig_size</span><span class="p">)</span>
 </pre></div>
 
 
-<div class="highlight"><pre><span></span>Current size: [6.0, 4.0]
+<div class="highlight"><pre><span></span><span class="err">Current size: [6.0, 4.0]</span>
 </pre></div>
 
 
@@ -125,11 +125,11 @@ dtype: object
 </pre></div>
 
 
-<div class="highlight"><pre><span></span><span class="n">df_final</span><span class="p">[</span><span class="n">df_final</span><span class="p">[</span><span class="s1">&#39;WEO Subject Code&#39;</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;NGDPD&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="mi">2010</span><span class="p">,</span><span class="n">ascending</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s2">&quot;barh&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><span class="n">df_final</span><span class="p">[</span><span class="n">df_final</span><span class="p">[</span><span class="s1">&#39;WEO Subject Code&#39;</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;NGDPD&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="mi">2010</span><span class="p">,</span><span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">kind</span><span class="o">=</span><span class="s2">&quot;barh&quot;</span><span class="p">)</span>
 </pre></div>
 
 
-<div class="highlight"><pre><span></span>&lt;matplotlib.axes._subplots.AxesSubplot at 0x10cefe048&gt;
+<div class="highlight"><pre><span></span><span class="err">&lt;matplotlib.axes._subplots.AxesSubplot at 0x10cefe048&gt;</span>
 </pre></div>
 
 
@@ -141,11 +141,11 @@ dtype: object
 
 
 <p><img alt="png" src="output_14_0.png"></p>
-<div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">df_final</span><span class="p">[</span><span class="mi">2010</span><span class="p">][</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(),</span> <span class="n">df_final</span><span class="p">[</span><span class="mi">2011</span><span class="p">][</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+<div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">df_final</span><span class="p">[</span><span class="mi">2010</span><span class="p">][</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(),</span> <span class="n">df_final</span><span class="p">[</span><span class="mi">2011</span><span class="p">][</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
 </pre></div>
 
 
-<div class="highlight"><pre><span></span>&lt;matplotlib.collections.PathCollection at 0x1176ed278&gt;
+<div class="highlight"><pre><span></span><span class="err">&lt;matplotlib.collections.PathCollection at 0x1176ed278&gt;</span>
 </pre></div>
 
 

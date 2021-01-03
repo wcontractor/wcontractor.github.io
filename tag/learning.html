@@ -22,59 +22,65 @@
 
             <aside id="featured" class="body">
                 <article>
-                    <h1 class="entry-title"><a href="/python-learning.html">A Pythonic Journey</a></h1>
+                    <h1 class="entry-title"><a href="/pelican-document.html">Pelican A Static Website Generator</a></h1>
+<footer class="post-info">
+        <span>Sun 03 January 2021</span>
+<span>| tags: <a href="/tag/python.html">Python</a><a href="/tag/learning.html">Learning</a><a href="/tag/pelican.html">Pelican</a></span>
+</footer><!-- /.post-info --><h1>Background</h1>
+<p>The pages contained within this site are static pages that I have created over the years to catalog my projects and learning adventure.  Anyone with a toddler can understand how your priorities shift from personal development projects to changing diapers and cleaning up spit up.  Having said that, my daughter is awesome and I love watching her grow up.  However, it has been some time since my last post, and I have wanted to get back to this for some time. </p>
+<p>This will have a distinctly differnt flavor from the other posts here.  In the future I plan on resuming project based posts as I continue to learn about Python, Machine Learning, and Cloud offerrings from the various providers.  However,my goal here is to outline the tools and workflow for creating a post and publishing it to this <a href="http://wcontractor.github.io">site.</a>. </p>
+<h1>Pelican Overview</h1>
+<p>Simply stated Pelican is a static website generator.  It enables you to quickly get a site up an running as there is no database or server side logic.  You can write your code in Markdown and through the support of Jinja templates get something very nice hosted virtually anywhere.  </p>
+<p>Check out the docs: <a href="https://docs.getpelican.com/en/stable/">Pelican 4.2.0</a></p>
+<h1>Why Pelican</h1>
+<p>I chose Pelican for a very simple reason, it's written in Python and I have selected Python for my learning journey.  There are other static website generators, another popular one is written in Ruby, called <a href="https://jekyllrb.com/">Jekyll</a>. </p>
+<h1>Installation and Configuration</h1>
+<p>Assuming you have Python and a package manager installed you'll need to install Pelican.</p>
+<p><code>pip install pelican</code></p>
+<p>Or with the optional Mardown support <strong>I highly recommend using Markdown</strong></p>
+<p><code>pip install pelican[Markdown]</code></p>
+<p>Now that you have Pelican installed you can run the pelican-quickstart script.  This will walk you through a series of questions to configure your site.  </p>
+<p><code>pelican-quickstart</code></p>
+<p>Next, create your local site from the root directory of your project on your local machine by running:</p>
+<p><code>pelican content</code></p>
+<p>If you like you can further fine tune the configurations by editing the configuration found in the root of your site.  In here you can tweak settings like pagination, themes, relative URLS, and more.  </p>
+<p><code>pelicanconf.py</code></p>
+<p><img alt="pelicanconf" src="pelicanconf.png"></p>
+<p>Finally, create your first post in the content directory:</p>
+<p><code>../yoursite/content/my-first-post.md</code></p>
+<p>The post should have at a minimum the following:</p>
+<ul>
+<li>Title: My Firt Post</li>
+<li>Date: 2021-01-04 14:40</li>
+<li>Category: Pelican</li>
+</ul>
+<h1>Creating &amp; Previewing Content</h1>
+<p>To create content quickly you can use any Markdown editor.  Since many of my posts are related to Python are Notebooks themselves I am using Jupyter Notebooks saved as .MD files.  These get saved to the content folder of my site.  You can preview the content locally by running the server.</p>
+<p><code>python -m http.server</code></p>
+<p>This will start the server at http://0.0.0.0:8000 </p>                </article>
+            </aside><!-- /#featured -->
+                <section id="content" class="body">
+                    <h1>Other articles</h1>
+                    <ol id="posts-list" class="hfeed">
+
+            <li><article class="hentry">
+                <header>
+                    <h1><a href="/python-learning.html" rel="bookmark"
+                           title="Permalink to A Pythonic Journey">A Pythonic Journey</a></h1>
+                </header>
+
+                <div class="entry-content">
 <footer class="post-info">
         <span>Sat 14 October 2017</span>
 <span>| tags: <a href="/tag/python.html">Python</a><a href="/tag/learning.html">Learning</a><a href="/tag/mooc.html">MOOC</a><a href="/tag/books.html">Books</a></span>
-</footer><!-- /.post-info --><h2>Background</h2>
-<p>One of the great things about Python is the ease of access to learning from traditional books and online materials and websites. Here is the path that I have been on for the better part of year.  </p>
-<h2>Current Course</h2>
-<p><a href="http://cs109.github.io/2015/">Harvard CS109</a> is a great course to learn more about Data Science the supporting methods of data engineering, data analysis, data visualization.  Taking this course not only broadens your knowledge of Python, but teaches you good patterns for implementing the tools and solving real world problems.  I would <strong>highly</strong> recommend this one.  The lectures and labs are available online from Harvard, but the homeworks were only posted for the 2013 course. </p>
-<blockquote>
-<p>This course introduces methods for five key facets of an investigation: data wrangling, cleaning, and sampling to get a suitable data set; data management to be able to access big data quickly and reliably; exploratory data analysis to generate hypotheses and intuition; prediction based on statistical methods such as regression and classification; and communication of results through visualization, stories, and interpretable summaries.</p>
-</blockquote>
-<h2>Massive Open Online Courses(MOOCs)</h2>
-<ul>
-<li>Coursera: <a href="https://www.coursera.org/specializations/python">Python for Everybody - A 5 part specialization</a></li>
-</ul>
-<p>This Coursera course is touch by Dr. Charles Severance from the University of Michigan and is based on the book Python for Informatics.  This is a great place to start your journey in Python.  The course covers the basics from syntax and data dtypes to conditionals.  If you are new to programming or Python I would <strong>highly</strong> recommend starting here.  Ther are some data types like tuples and patterns like how to iterate over a dictionary that you can use over and over again in your journey.  This course also covers some advanced topics like how to work with an API and write data to a SQLite database.</p>
-<ul>
-<li>Coursera: <a href="https://www.coursera.org/learn/python-data-analysis/">Introduction to Python in Data Analysis</a></li>
-</ul>
-<p>Although this course is titled introduction, it is certainly not an introductory course.  You should have a firm grasp of working with data, cleaning data, and processing data prior to taking this.  The best part of this course were the latter weeks where the statistical concepts where introduced.  Using Python and Pandas to summarize the data and perform more complex operations like t-tests. </p>
-<ul>
-<li>Udacity: <a href="https://classroom.udacity.com/courses/ud036">Programming Foundations with Python</a></li>
-</ul>
-<p>Once you have the basics under your belt this is a good second step.  It follows a use case style approach and has a heavy emphasis on building your code using functions for repeatabilty and extensibility.  </p>
-<ul>
-<li>edX: <a href="https://courses.edx.org/courses/course-v1:HarvardX+PH526x+3T2016/course/">Using Python for Research</a></li>
-</ul>
-<p>This edX course is one of the first courses I took that really emphasised the algorithms and math used in Data Science.  After a couple of weeks of introducing some basic concepts and the numpy library it dives into uses cases such as translating a DNA sequence and doing a correlation of whiskey based on their flavor profile. </p>
-<p>Not directly related to Data Science or Machine Learning, but courses that get back to the fun!
-- Coursera: <a href="https://www.coursera.org/learn/interactive-python-1">An Introduction to Interactive Programming in Python (Part 1)</a>
-- Coursera: <a href="https://www.coursera.org/learn/interactive-python-2">An Introduction to Interactive Programming in Python (Part 2)</a></p>
-<h2>Books and other Learning Material</h2>
-<p><a href="http://py4inf.com/book.php/">Python for Informatics</a> - This is the book the Coursea Course Python for Everybody uses.</p>
-<p><a href="http://greenteapress.com/wp/think-python-2e/">Think Python 2e</a> - How to Think Like a Computer Scientist </p>
-<p>Anaconda - Open Data Science Platform - <a href="https://www.continuum.io/anaconda-overview">Download</a></p>
-<p>A few words about markdown - <a href="https://guides.github.com/features/mastering-markdown/">Using GitHub Flavored Markdown</a></p>
-<h2>Future Courses</h2>
-<ul>
-<li>[Coursera: Machine Learning 5 Part Specialization by The University of Washington]</li>
-<li><a href="https://www.coursera.org/learn/ml-foundations/home/welcome">Machine Learning Foundations: A Case Study Approach</a> </li>
-<li><a href="https://www.coursera.org/learn/ml-regression Machine Learning: Regression">Machine Learning: Linear Regression</a></li>
-<li><a href="https://www.coursera.org/learn/ml-classification Machine Learning: Classification">Machine Learning: Classification</a></li>
-<li><a href="https://www.coursera.org/learn/ml-clustering-and-retrieval Machine Learning: Clustering &amp; Retrieval">Machine Learning: Clusterning &amp; Retrieval</a></li>
-</ul>
-<p>Andrew Ng's course built the cirriculum for teaching Machine Learning. https://www.coursera.org/learn/machine-learning</p>
-<blockquote>
-<p>In this module, we introduce the core idea of teaching a computer to learn concepts using data—without being explicitly programmed. </p>
-</blockquote>                </article>
+</footer><!-- /.post-info -->                <p>A learning journey of thinking pythonically and growing skill development skill sets</p>
+                <a class="readmore" href="/python-learning.html">read more</a>
+                </div><!-- /.entry-content -->
+            </article></li>
+            </ol><!-- /#posts-list -->
 <p class="paginator">
     Page 1 / 1
 </p>
-            </aside><!-- /#featured -->
-            </ol><!-- /#posts-list -->
             </section><!-- /#content -->
         <section id="extras" class="body">
                 <div class="blogroll">
